@@ -57,7 +57,7 @@ class Invitation(models.Model):
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, name, familyname, type='STU', email=None, password=None):
+    def create_user(self, name, familyname, type='STU', email=None, password=None, super=False, staff=False):
         if familyname is not Family:
             try:
                 family = Family.objects.get(name=familyname)
@@ -71,8 +71,8 @@ class UserManager(BaseUserManager):
             family = familyname
 
         user = self.model(username=name.title(), family=family, type=type, )
-        user.is_staff = False
-        user.is_superuser = False
+        user.is_staff = staff
+        user.is_superuser = super
         if email is None:
             user.email = family.email
         else:
@@ -90,6 +90,9 @@ class UserManager(BaseUserManager):
 
         user.save(using=self._db)
         return user
+
+    def create_superuser(self, username, password, email, **other_fields):
+        self.create_user(name=username, familyname='Temp', email=email, type='STA', password=password, super=True, staff=True)
 
 
 class User(AbstractUser):  # Participant
