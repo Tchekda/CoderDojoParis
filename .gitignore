@@ -1,0 +1,10 @@
+.idea/
+.git/
+secretkey.txt
+**/__pycache__
+*.sqlite3
+venv/
+**/migrations
+stunnel/
+/static
+scripts/setenv.sh

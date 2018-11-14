@@ -1,0 +1,12 @@
+{% extends 'Homepage/layout.html' %}
+
+{% block title %}Evènements{% endblock %}
+
+{% block body %}
+    <h1>Events Futurs</h1>
+    {% for event in events %}
+        <h2>{{ event.time_from|date|title }}</h2>
+        <address>{{ event.public_adress|title }}</address>
+        <hr>
+    {% endfor %}
+{% endblock %}

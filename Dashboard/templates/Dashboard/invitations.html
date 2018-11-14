@@ -1,0 +1,53 @@
+{% extends 'Dashboard/layout.html' %}
+{% block body %}
+    <section class="content-header"><h1>Vos Invitations</h1></section>
+    {% if receive %}
+        <div class="pad margin no-print">
+            <div class="callout callout-success" style="margin-bottom: 0!important;">
+                <h4><i class="fa fa-info"></i> Invité</h4>
+                Par la {{ receive.sender }} le {{ receive.date|date }}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="box">
+            <div class="box-header with-border">
+                <h3>Invitations envoyées</h3>
+            </div>
+            <div class="box-body">
+                {% if invites %}
+                    <table class="table table-bordered">
+                        <tbody>
+                        <tr>
+                            <th>Date</th>
+                            <th>Destinataire</th>
+                            <th>Code #</th>
+                            <th>Message</th>
+                            <th>Statut</th>
+                        </tr>
+                        {% for invite in invites %}
+                            <tr>
+                                <td>{{ invite.date|date }}</td>
+                                <td>{{ invite.receiver }}</td>
+                                <td>{{ invite.token|truncatechars:9 }}</td>
+                                <td>{{ invite.message|striptags|safe}}</td>
+                                {% if invite.state == 'S' %}
+                                    <td><span class="badge bg-aqua">Envoyé</span></td>
+                                {% else %}
+                                    <td><span class="badge bg-green">inscrit</span></td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="callout callout-danger">
+                    <h4>Aucune invitation trouvée</h4>
+                    <p>Vous n'avez invité personne et n'êtes pas dans l'obligation de le faire, seulement si l'envie se présente...</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+{% endblock %}

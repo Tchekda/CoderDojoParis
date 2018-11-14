@@ -1,0 +1,46 @@
+{% extends 'Dashboard/layout.html' %}
+{% block css %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'Dashboard/css/dataTables.bootstrap.min.css' %}">
+
+{% endblock %}
+{% block body %}
+
+    <div class="box">
+        <div class="box-header with-border">
+            <h3>Liste des familles </h3>
+        </div>
+        <div class="box-body">
+            <table id="familytable" class="table table-bordered table-hover">
+                <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Nom</th>
+                    <th>Nombre de Participants</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for familly in families %}
+                    <tr>
+                        <td><a href="{% url 'dashboard:family' familly.id %}">{{ familly.id }}</a></td>
+                        <td>{{ familly.name }}</td>
+                        <td>{{ familly.get_number }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    </div>
+{% endblock %}
+{% block scritps %}
+    {% load static %}
+    <script src="{% static 'Dashboard/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'Dashboard/js/dataTables.bootstrap.min.js' %}"></script>
+    <script>
+        $(function () {
+            $('#familytable').DataTable()
+        })
+    </script>
+{% endblock %}

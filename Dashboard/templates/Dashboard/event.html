@@ -1,0 +1,70 @@
+{% extends 'Dashboard/layout.html' %}
+{% block body %}
+    {% load mathfilters %}
+
+    <div class="box">
+        <div class="box-header with-border">
+            <h3 class="box-title">Evènement du {{ event.time_from|date:'l j F Y'|title }}</h3>
+            <div class="box-tools pull-right">
+                <!-- Buttons, labels, and many other things can be placed here! -->
+                <!-- Here is a label for example -->
+                <span class="label label-primary">{{ event.public_adress }} </span>
+            </div>
+            <!-- /.box-tools -->
+        </div>
+        <!-- /.box-header -->
+        <div class="box-body">
+            <h3>Les inscriptions:</h3>
+            <p>{{ event.participants.count }} personnes sont inscrites sur un total de {{ event.max_students }}</p>
+            <div class="progress active">
+                <div class="progress-bar progress-bar-success progress-bar-striped" role="progressbar"
+                     aria-valuenow="{{ event.participants.count }}" aria-valuemin="0"
+                     aria-valuemax="{{ event.max_students }}"
+                     style="width: {% widthratio event.participants.count event.max_students 100 %}%">
+                    <span class="sr-only"></span>
+                </div>
+            </div>
+            {% if event.state == 'PLA' %}
+                <div class="callout callout-info">
+                    <h4>Prévu</h4>
+
+                    <p>L'évènement est prévu et les inscriptions ne sont pas encore ouvertes. Attendez un peu...</p>
+                </div>
+            {% elif event.state == 'REG' %}
+                {% if user in event.participants.all %}
+                    <div class="callout callout-success">
+                        <h4>Inscrit</h4>
+                        <p>L'évènement est ouvert aux inscriptions et vous êtes déjà inscrit, Super!</p>
+                    </div>
+                {% else %}
+                    <div class="callout callout-success">
+                        <h4>Ouvert</h4>
+                        <p>L'évènement est ouvert aux inscriptions mais nous n'êtes pas inscrit, allez vite vous inscire:
+                            <a href="#" class="btn btn-danger">S'inscire Maintenant</a></p>
+                    </div>
+                {% endif %}
+            {% elif event.state == 'PRO' %}
+                {% if user in event.participants.all %}
+                    <div class="callout callout-success">
+                        <h4>En Cours</h4>
+                        <p>L'évènement est en cours et vous y êtes inscrit!</p>
+                    </div>
+                {% else %}
+                    <div class="callout callout-danger">
+                        <h4>En Cours</h4>
+                        <p>L'évènement est en cours et vous ne pouvez plus vous y inscrire ;(</p>
+                    </div>
+                {% endif %}
+
+            {% else %}
+            {% endif %}
+        </div>
+        <!-- /.box-body -->
+        <div class="box-footer">
+            Des Questions? <a href="mailto:contact@coderdojoparis.fr">Nous Contacter par Mail <i
+                class="fa fa-envelope"></i></a>
+        </div>
+        <!-- box-footer -->
+    </div>
+    <!-- /.box -->
+{% endblock %}

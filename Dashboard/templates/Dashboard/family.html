@@ -1,0 +1,38 @@
+{% extends 'Dashboard/layout.html' %}
+{% block body %}
+    <div class="box box-success">
+        <div class="box-header with-border"><h3>{{ selected_family }}</h3></div>
+        <div class="box-body">
+            <div class="table-responsive">
+                <table class="table no-margin">
+                    <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Prénom</th>
+                        <th>Sexe</th>
+                        <th>Connecter</th>
+                        <th>Editer</th>
+                        <th>Supprimer</th>
+                    </tr>
+
+                    </thead>
+                    <tbody>
+                    {% for familyUser in users %}
+                        <tr>
+                            <td>{{ familyUser.id }}</td>
+                            <td>{{ familyUser.username }}</td>
+                            <td>{{ familyUser.get_gender_display }}</td>
+                            <td><a href="{% url 'dashboard:user' familyUser.id %}"><span class="badge bg-blue"><i
+                                    class="fa fa-sign-in"></i></span></a></td>
+                            <td><a href="{% url 'dashboard:user-edit' familyUser.id %}"><span class="badge bg-green"><i
+                                    class="fa fa-edit"></i></span></a></td>
+                            <td><a href="{% url 'dashboard:user-delete' familyUser.id %}"><span class="badge bg-red"><i
+                                    class="fa fa-trash"></i></span></a></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

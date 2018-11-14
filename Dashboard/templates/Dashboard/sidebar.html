@@ -1,0 +1,121 @@
+<aside class="main-sidebar">
+    <!-- sidebar: style can be found in sidebar.less -->
+    <section class="sidebar">
+        <!-- Sidebar user panel -->
+        <div class="user-panel">
+            <div class="pull-left image">
+                <img src="https://placehold.it/160x160" class="img-circle" alt="User Image">
+            </div>
+            <div class="pull-left info">
+                <p>{{ user.get_full_name }}</p>
+                <i class="fa fa-circle text-success"></i> {{ user.get_type_display }}
+            </div>
+        </div>
+        <ul class="sidebar-menu" data-widget="tree">
+            <li class="header"><a href="{% url 'dashboard:index' %}" class="no-border no-padding">Page d'Accueil</a>
+            </li>
+            <li class="active treeview menu-open">
+                <a href="#">
+                    <i class="fa fa-calendar"></i> <span>Évènenement</span>
+                    <span class="pull-right-container">
+                        <i class="fa fa-angle-left pull-right"></i>
+                    </span>
+                </a>
+                <ul class="treeview-menu">
+                    <li {% if past == False %}class="active"{% endif %}><a href="{% url 'dashboard:futur-events' %}"><i
+                            class="fa fa-calendar-check-o"></i> Prochains évènements</a></li>
+                    <li {% if past %}class="active"{% endif %}><a href="{% url 'dashboard:past-events' %}"><i
+                            class="fa fa-calendar-times-o"></i> Évènenements passés</a></li>
+                    {% if user.is_staff %}
+                        <li><a href="{% url 'dashboard:index' %}"><i
+                                class="fa fa-plus"></i> Créer un évènement</a></li>
+                    {% endif %}
+                </ul>
+            </li>
+            {% if workshops %}
+                <li class="treeview">
+                    <a href="#">
+                        <i class="fa fa-laptop"></i>
+                        <span>Ateliers</span>
+                        <span class="pull-right-container">
+                          <span class="label label-primary pull-right">{{ workshops.count }}</span>
+                        </span>
+                    </a>
+                    <ul class="treeview-menu">
+                        {% for workshop in workshops %}
+                            <li><a href="{% url 'dashboard:workshops' workshop.id %}"><i
+                                    class="fa fa-circle-o"></i> {{ workshop }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% endif %}
+            {% if family %}
+                <li class="treeview">
+                    <a href="#">
+                        <i class="fa fa-users"></i>
+                        <span>Famille</span>
+                        <span class="pull-right-container">
+                            {% if user.type == 'STA' and families %}
+                                <span class="pull-right-container">
+                                  <span class="label label-primary pull-right">{{ families.count }}</span>
+                                </span>
+                            {% else %}
+                                <i class="fa fa-angle-left pull-right"></i>
+                            {% endif %}
+                        </span>
+                    </a>
+                    <ul class="treeview-menu">
+                        <li class="treeview">
+                            <a href="#">
+                                <span>Ma Famille</span>
+                                <span class="pull-right-container">
+                                    <span class="label label-success pull-right">{{ family.count }}</span>
+                                </span>
+                            </a>
+                            <ul class="treeview-menu">
+                                {% for familyUser in family %}
+                                    {% if user.id == familyUser.id %}
+                                        <li class="active"><a href="{% url 'dashboard:user-edit' familyUser.id %}"><i
+                                                class="fa fa-circle-o"></i> {{ familyUser }}</a></li>
+                                    {% else %}
+                                        <li><a href="{% url 'dashboard:user' familyUser.id %}"><i
+                                                class="fa fa-circle-o"></i> {{ familyUser }}</a></li>
+                                    {% endif %}
+                                {% endfor %}
+                                <li><a href="{% url 'dashboard:add-member' %}"><i
+                                        class="fa fa-plus"></i> Ajouter un membre</a></li>
+                            </ul>
+                        </li>
+                        {% if user.type == 'STA' and families %}
+                            <li>
+                                <a href="{% url 'dashboard:families' %}"><i class="fa fa-search"></i> Trouver une
+                                    famille</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </li>
+            {% endif %}
+            <li class="treeview">
+                <a href="#">
+                    <i class="fa fa-users"></i>
+                    <span>Invitations</span>
+                    <span class="pull-right-container">
+                                <span class="pull-right-container">
+                                  <i class="fa fa-angle-left pull-right"></i>
+                                </span>
+                        </span>
+                </a>
+                <ul class="treeview-menu">
+                    <li>
+                        <a href="{% url 'dashboard:invitations' %}"><i class="fa fa-circle-o"></i> Mes Invitations</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'dashboard:new-invite' %}"><i class="fa fa-envelope-o"></i> Envoyer une
+                            invitation</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </section>
+
+</aside>

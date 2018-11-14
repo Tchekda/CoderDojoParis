@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="icon" href="{% static "Homepage/img/favicon.ico" %}"/>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'Core/css/login.css' %}">
+</head>
+<body id="LoginForm">
+<div class="container">
+    <div class="login-form">
+        <div class="main-div">
+            <div class="panel">
+                {% if admin %}
+                    <h2>Accès Staff</h2>
+                    <p>Veuillez renseigner votre adresse mail et votre mot de passe</p>
+                {% else %}
+                    <h2>Accès Participant</h2>
+                    <p>Veuillez renseigner votre nom et adresse mail</p>
+                {% endif %}
+            </div>
+            <form id="login-form" method="post"
+                  action="{% if admin %}{% url 'core:admin-login' %}{% else %}{% url 'core:login' %}{% endif %}">
+                {% csrf_token %}
+                {% for error in login_form.non_field_errors %}
+                    <div class="form-group has-errors text-danger small">
+                        {{ error }}
+                    </div>
+                {% endfor %}
+                {% for field in login_form %}
+                    <div class="form-group has-errors text-danger small">
+                        {{ field.errors }}
+                    </div>
+                    <div class="form-group">
+                        {{ field }}
+                    </div>
+                {% endfor %}
+                <div class="links">
+                    <a href="{% url 'homepage:about' %}#join-us">Pas encore de compte?</a>
+                    {% if admin %}
+                        <a href="{% url 'core:login' %}" class="links-right">Accès Famille</a>
+                    {% else %}
+                        <a href="{% url 'core:admin-login' %}" class="links-right">Accès Admin</a>
+                    {% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary">Se connecter</button>
+                <div class="back">
+                    <a href="{% url 'homepage:index' %}">Retour à la page d'accueil</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.js"></script>
+<script src="{% static 'Core/js/noty.js' %}"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
+<script>
+    (function ($) {
+        {% if notifications %}
+            {% for notification in notifications %}
+                new Noty({
+                    text: '{{ notification.text }}',
+                    type: '{{ notification.type }}'
+                }).show();
+            {% endfor %}
+        {% endif %}
+    })(jQuery)
+</script>
+</body>
+</html>

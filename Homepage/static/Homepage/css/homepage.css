@@ -1,0 +1,17 @@
+.main-container {
+    height: 100vh;
+    min-height: 300px;
+}
+
+.carousel-item {
+    height: 95vh;
+}
+
+.navbar-bg {
+    background-color: rgba(0, 50, 75, 0.95);
+}
+
+.nav-link-end {
+    color: white !important;
+    font-weight: bolder;
+}

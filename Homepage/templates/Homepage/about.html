@@ -1,0 +1,44 @@
+{% extends 'Homepage/layout.html' %}
+{% load static %}
+{% block title %}A Propos{% endblock %}
+{% block css %}
+    <link rel="stylesheet"
+          href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.2.0/css/ol.css">{% endblock %}
+{% block body %}
+    <div class="body-container">
+        <div id="what-is"><h2>Qu'est ce que Coder Dojo Paris</h2>
+            <p><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab at eligendi fuga, laudantium molestiae quis repellendus? Dignissimos, dolores est facere molestiae nihil nobis nostrum obcaecati, quam quibusdam quo similique totam!</span><span>Accusamus architecto, ducimus enim et exercitationem explicabo facilis fugiat nobis, quisquam sunt temporibus veniam! Accusantium ad adipisci aliquid dolor illo natus, qui repellendus, similique, sit soluta suscipit tenetur. Eveniet, fugiat?</span><span>Amet at, blanditiis deleniti doloremque doloribus eligendi fuga fugiat fugit iure iusto maxime nemo, nobis odit qui quo suscipit, vel! At dolor ipsum labore pariatur sequi ullam vero voluptas voluptate.</span><span>Animi dolorem ex facere fugiat, labore maiores numquam officiis quam sequi sunt vel vero voluptatibus! Accusamus animi, culpa dolorem est expedita id itaque modi molestiae natus, nostrum quaerat quibusdam voluptatum.</span><span>Accusamus aliquid aperiam cumque dicta dolor dolorem ducimus eligendi fuga fugit id ipsum iste itaque laborum modi necessitatibus non, possimus quaerat quisquam sed temporibus! Eos laboriosam nulla porro quod voluptatibus!</span><span>A accusamus alias aperiam beatae cum cumque eius eveniet excepturi, magnam modi molestiae nam natus odio possimus quae quaerat rerum, saepe sequi sit tenetur ut veritatis vitae voluptatem. Magnam, voluptates?</span><span>Accusantium animi asperiores earum, excepturi fuga fugiat laboriosam qui quisquam vero voluptas? Alias corporis eaque fugiat impedit laboriosam, nam qui quis quod reprehenderit sapiente, veritatis voluptas? Nemo provident tempore totam!</span><span>Beatae consequatur dolor odio quisquam vitae. Ad assumenda at debitis earum, ipsam laboriosam magnam nemo obcaecati, perferendis, quibusdam recusandae repudiandae saepe similique sunt tempora unde veniam voluptatibus. Cumque, harum, iusto.</span><span>Accusantium ex exercitationem labore numquam veritatis! Architecto consequatur culpa debitis dicta et illum, incidunt modi obcaecati. Ab amet aperiam deleniti earum eligendi minima nulla repellat repellendus, tenetur unde voluptate voluptatibus!</span><span>Ad deleniti dolorem ea eligendi enim facere harum illum, inventore ipsa, iusto molestiae obcaecati odio porro, praesentium quaerat quidem recusandae reiciendis repudiandae saepe vel. Alias assumenda in labore nulla sapiente!</span>
+            </p>
+        </div>
+        <hr>
+        <div id="join-us">
+            <h2>Nous rejoindre</h2>
+            <p>L'évènement Coder-Dojo Paris n'est malheuresement pas encore ouvert au grand public, nous faisons cela
+                afin de garder l'esprit un peu fermé et gratuit de la chose, mais vous pouvez toujours nous rejoindre.
+                Vous avez surment du nous connaitre par un de vos proche ou connaissance, et bien c'est grâce à elle que
+                vous pourrez nous rejoindre, il lui suffit de renseigner votre adresse mail et vous recevrez une
+                invitation dans les secondes qui suivent. Et vous serez alors membre de l'organisation!</p>
+        </div>
+        <hr>
+        <div id="where">
+            <h2>Où nous trouver?</h2>
+            <p>Nous ne pouvons communiquer l'adresse exacte pour des raisons de confidentialité, vous la recevrez une
+                semaine avant l'évènement.</p>
+            <em>Nous vous prions donc aussi de ne pas la diffuser publiquement, merci d'avance</em>
+            <div id="osmMap" style="height:650px"></div>
+            <div style="display: none;">
+                <div id="marker" title="Marker"></div>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block js %}
+    {% get_static_prefix as STATIC_PREFIX %}
+    <script type="text/javascript">
+        let logourl = "{{ STATIC_PREFIX }}" + "Homepage/img/coderdojologo.png";
+    </script>
+    <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.2.0/build/ol.js"></script>
+    <script src="{% static "Homepage/js/osm.js" %}"></script>
+{% endblock %}

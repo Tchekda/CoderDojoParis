@@ -1,0 +1,65 @@
+<header class="main-header">
+    <a href="{% url 'homepage:index' %}" class="logo">
+        <span class="logo-mini"><b>C</b>oder</span>
+        <span class="logo-lg">Coder<b>-</b>Dojo</span>
+    </a>
+    <!-- Header Navbar: style can be found in header.less -->
+    <nav class="navbar navbar-static-top">
+        <!-- Sidebar toggle button-->
+        <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
+            <span class="sr-only">Toggle navigation</span>
+        </a>
+        <!-- Navbar Right Menu -->
+        <div class="navbar-custom-menu">
+            <ul class="nav navbar-nav">
+                <!-- User Account: style can be found in dropdown.less -->
+                <li class="dropdown user user-menu">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        <img src="https://placehold.it/160x160" class="user-image" alt="User Image">
+                        <span class="hidden-xs">{{ user.get_short_name }}.</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <!-- User image -->
+                        <li class="user-header">
+                            <img src="https://placehold.it/160x160" class="img-circle" alt="User Image">
+
+                            <p>
+                                {{ user }}
+                                <small>{{ user.family }}</small>
+                            </p>
+                        </li>
+                        <!-- Menu Body
+                        <li class="user-body">
+                          <div class="row">
+                            <div class="col-xs-4 text-center">
+                              <a href="#">Followers</a>
+                            </div>
+                            <div class="col-xs-4 text-center">
+                              <a href="#">Sales</a>
+                            </div>
+                            <div class="col-xs-4 text-center">
+                              <a href="#">Friends</a>
+                            </div>
+                          </div>
+
+                        </li> /.row -->
+                        <!-- Menu Footer-->
+                        <li class="user-footer">
+                            <div class="pull-left">
+                                <a href="{% url 'dashboard:index' %}" class="btn btn-default btn-flat">Utilisateurs</a>
+                            </div>
+                            <div class="pull-right">
+                                <a href="{% url 'core:logout' %}" class="btn btn-default btn-flat">Se déconnecter</a>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+                <!-- Control Sidebar Toggle Button
+                <li>
+                  <a href="#" data-toggle="control-sidebar"><i class="fa fa-gears"></i></a>
+                </li>-->
+            </ul>
+        </div>
+
+    </nav>
+</header>

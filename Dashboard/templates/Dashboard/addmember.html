@@ -1,0 +1,31 @@
+{% extends 'Dashboard/layout.html' %}
+{% block body %}
+    <div class="box box-success">
+        <div class="box-header with-border"><h3>Ajouter un membre à la famille</h3></div>
+        <div class="box-body">
+            <form id="login-form" method="post" role="form" action="{% url 'dashboard:add-member' %}">
+                {% csrf_token %}
+                {% for error in form.non_field_errors %}
+                    <div class="form-group has-errors text-danger small">
+                        {{ error }}
+                    </div>
+                {% endfor %}
+                {% for field in form.visible_fields %}
+                    <div class="form-group has-errors text-danger small">
+                        {{ field.errors }}
+                    </div>
+                    <div class="form-group">
+                        {{ field.label }}
+                        {{ field }}
+                    </div>
+                {% endfor %}
+                {% for field in form.hidden_fields %}
+                    {{ field }}
+                {% endfor %}
+                <div class="box-footer">
+                    <button type="submit" class="btn btn-success">Ajouter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'Homepage/layout.html' %}
+
+{% block title %}Staff{% endblock %}
+
+{% block body %}
+    <h1>Staff</h1>
+    <hr>
+    {% for personal in staff %}
+        <h2>{{ personal.get_full_name }}</h2>
+        <hr>
+    {% endfor %}
+{% endblock %}
