@@ -40,7 +40,7 @@
                     <div class="callout callout-success">
                         <h4>Ouvert</h4>
                         <p>L'évènement est ouvert aux inscriptions mais nous n'êtes pas inscrit, allez vite vous inscire:
-                            <a href="#" class="btn btn-danger">S'inscire Maintenant</a></p>
+                            <a href="{% url 'dashboard:register' event.id %}" class="btn btn-danger">S'inscire Maintenant</a></p>
                     </div>
                 {% endif %}
             {% elif event.state == 'PRO' %}

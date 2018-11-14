@@ -57,7 +57,7 @@ class Invitation(models.Model):
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, name, familyname, type='STU', email=None, password=None, super=False, staff=False):
+    def create_user(self, name, familyname, type='STU', gender='M', email=None, password=None, super=False, staff=False):
         if familyname is not Family:
             try:
                 family = Family.objects.get(name=familyname)
@@ -70,7 +70,7 @@ class UserManager(BaseUserManager):
         else:
             family = familyname
 
-        user = self.model(username=name.title(), family=family, type=type, )
+        user = self.model(username=name.title(), family=family, type=type, gender=gender)
         user.is_staff = staff
         user.is_superuser = super
         if email is None:

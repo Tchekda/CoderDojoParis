@@ -9,8 +9,9 @@ from django.conf import settings
 from django.contrib.auth import login, logout
 from Core.models import Workshop, User, Event, Family, Invitation
 from .forms import EditUserForm, AddMember, SendInvitation
-from django.core.mail import send_mail
-from smtplib import SMTPException
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 
 # Create your views here.
@@ -131,7 +132,7 @@ def addMember(request):
                              'type': 'error'}]
                         return render(request, 'Dashboard/addmember.html', setReturnedValues(request, {'form': form}))
             user = User.objects.create_user(name=username.title(), email=email, familyname=request.user.family.name,
-                                            type=type)
+                                            type=type, gender=cleaned['gender'])
             login(request, user)
             request.session['notifications'] = [
                 {'text': 'Vous avez créer et êtes désormais connecté avec le compte de %s' % user.get_short_name(),
@@ -155,12 +156,26 @@ def userDelete(request, id):
             {'text': "Vous n'avez pas la permission de supprimer cet utilisateur",
              'type': 'error'}]
         return redirect('dashboard:index')
-    request.user.delete()
-    logout(request)
-    request.session['notifications'] = [
-        {'text': "L'utilisateur à bel est été supprimé, veuillez vous re-connecter",
-         'type': 'success'}]
-    return redirect(reverse('core:login'))
+    try:
+        user = User.objects.get(id=id)
+    except User.DoesNotExist:
+        request.session['notifications'] = [
+            {'text': "Utilisateur Introuvable",
+             'type': 'error'}]
+        return redirect('dashboard:index')
+    if request.user.id is id:
+        user.delete()
+        logout(request)
+        request.session['notifications'] = [
+            {'text': "L'utilisateur à bel est été supprimé, veuillez vous re-connecter",
+             'type': 'success'}]
+        return redirect(reverse('core:login'))
+    else:
+        user.delete()
+        request.session['notifications'] = [
+            {'text': "L'utilisateur à bel est été supprimé",
+             'type': 'success'}]
+        return redirect(reverse('dashboard:families'))
 
 
 @login_required()
@@ -219,6 +234,54 @@ def sendInvitation(request):
     else:
         form = SendInvitation()
         return render(request, 'Dashboard/invite.html', setReturnedValues(request, {'form': form}))
+
+
+@login_required()
+def register(request, id):
+    try:
+        event = Event.objects.get(id=id)
+    except Event.DoesNotExist:
+        request.session['notifications'] = [
+            {'text': "Evènement introuvable",
+             'type': 'error'}]
+        return redirect(reverse('dashboard:futur-events'))
+    if event.state != 'REG':
+        request.session['notifications'] = [
+            {'text': "Ce évènement n'est pas ouvert aux inscriptions %s" % event.state,
+             'type': 'error'}]
+        return redirect(reverse('dashboard:futur-events'))
+    if event.participants:
+        students = 0
+        for student in event.participants.all():
+            if student.id is request.user.id:
+                request.session['notifications'] = [
+                    {'text': "Vous êtes déjà inscrit",
+                     'type': 'success'}]
+                return redirect(reverse('dashboard:event', kwargs={'id': id}))
+            if student.type is 'STU':
+                students += 1
+
+        if students >= event.max_students:
+            request.session['notifications'] = [
+                {'text': "Il n'y a plus de places à cet évènement, contactez nous pour plus d'info!",
+                 'type': 'error'}]
+            return redirect(reverse('dashboard:event', kwargs={'id': id}))
+
+    event.participants.add(request.user)
+    subject, from_email, to = 'Confirmation pour Coder Dojo Paris du %s' % event.time_from.strftime(
+        "%d %b %Y").title(), settings.EMAIL_HOST_USER, request.user.email
+
+    html_content = render_to_string('mail/register_confirmation.html', {'event': event})  # render with dynamic value
+    text_content = strip_tags(html_content)  # Strip the html tag. So people can see the pure text at least.
+
+    # create the email, and attach the HTML version as well.
+    msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
+    request.session['notifications'] = [
+        {'text': "Vous avez été inscrit et un mail de confirmation vous a été adressé",
+         'type': 'success'}]
+    return redirect(reverse('dashboard:event', kwargs={'id': id}))
 
 
 @login_required()

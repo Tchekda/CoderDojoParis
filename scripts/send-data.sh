@@ -2,7 +2,6 @@
 python manage.py dumpdata > data.json
 git add data.json
 git commit -m "Added data"
-heroku pg:reset DATABASE --confirm tchekda-coderdojoparis
 git push heroku master -f
 git reset --soft HEAD^
 git reset HEAD data.json

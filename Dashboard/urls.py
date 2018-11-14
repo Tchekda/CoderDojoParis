@@ -17,4 +17,5 @@ urlpatterns = [
     path('family/<int:id>/', views.families, name='family'),
     path('invite/add/', views.sendInvitation, name='new-invite'),
     path('invite/', views.invitations, name='invitations'),
+    path('register/<int:id>/', views.register, name='register'),
 ]
