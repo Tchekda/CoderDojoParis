@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.conf import settings
 from django.contrib.auth import login, logout
 from Core.models import Workshop, User, Event, Family, Invitation
-from .forms import EditUserForm, AddMember, SendInvitation
+from .forms import EditUserForm, AddMember, SendInvitation, InvitedFamily
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
@@ -213,22 +213,20 @@ def sendInvitation(request):
             invitation = Invitation(token=uuid.uuid4(), sender=request.user.family, receiver=cleaned['receiver'],
                                     message=cleaned['message'])
             invitation.save()
-            try:
-                send_mail(subject='Invitation au Coder-Dojo Paris par %s' % request.user.get_short_name(),
-                          from_email=settings.EMAIL_HOST_USER,
-                          html_message=invitation.message,
-                          recipient_list=[invitation.receiver],
-                          message="Ce mail est en HTML, veuillez vous mettre à jour..."
-                          )
-            except SMTPException:
-                request.session['notifications'] = [
-                    {'text': "Votre inviation n'à pas pue être envoyée, réessayer plus tard",
-                     'type': 'error'}]
-            else:
-                request.session['notifications'] = [
-                    {'text': "Votre inviation à bien été envoyée",
-                     'type': 'success'}]
-                return redirect(reverse('dashboard:index'))
+            subject, from_email, to = 'Invitation au Coder-Dojo Paris par %s' % request.user.get_short_name(), settings.EMAIL_HOST_USER, invitation.receiver
+
+            html_content = render_to_string('mail/invation.html',
+                                            {'invite': invitation, 'url': request.build_absolute_uri(
+                                                reverse('dashboard:invited', kwargs={'token': invitation.token}))})
+            text_content = strip_tags(html_content)
+
+            msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+            request.session['notifications'] = [
+                {'text': "Votre inviation à bien été envoyée, attention elle peut tomber dans les spams!",
+                 'type': 'success'}]
+            return redirect(reverse('dashboard:index'))
 
         return render(request, 'Dashboard/invite.html', setReturnedValues(request, {'form': form}))
     else:
@@ -279,9 +277,53 @@ def register(request, id):
     msg.attach_alternative(html_content, "text/html")
     msg.send()
     request.session['notifications'] = [
-        {'text': "Vous avez été inscrit et un mail de confirmation vous a été adressé",
-         'type': 'success'}]
+        {
+            'text': "Vous avez été inscrit et un mail de confirmation vous a été adressée, attention elle peut tomber dans les spams!",
+            'type': 'success'}]
     return redirect(reverse('dashboard:event', kwargs={'id': id}))
+
+
+@login_required()
+def invited(request, token):
+    try:
+        invitation = Invitation.objects.get(token=token)
+    except Invitation.DoesNotExist:
+        request.session['notifications'] = [
+            {
+                'text': "Cette invitation n'est pas valable, demandez à votre ami de vous en renvoyer une!",
+                'type': 'error'}]
+        return redirect(reverse('core:login'))
+    if request.POST:
+        form = InvitedFamily(request.POST)
+        if form.is_valid():
+            cleaned = form.cleaned_data
+            user = User.objects.create_user(name=cleaned['username'], familyname=cleaned['family'],
+                                            email=cleaned['email'], type=cleaned['type'], gender=cleaned['gender'])
+            user.save()
+            login(request, user)
+            subject, from_email, to = "Confirmation au Coder Dojo Paris d'inscription", settings.EMAIL_HOST_USER, invitation.receiver
+
+            html_content = render_to_string('mail/creation_confirmation.html',
+                                            {'loginUrl': request.build_absolute_uri(
+                                                reverse('core:login')),
+                                                'email': user.email, 'name': user.family.name})
+            text_content = strip_tags(html_content)
+
+            msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+            request.session['notifications'] = [
+                {'text': "Votre compte a bien été créer, vous êtes désormais connecté",
+                 'type': 'success'}]
+            invitation.state = 'D'
+            invitation.save()
+
+            return redirect(reverse('dashboard:index'))
+
+    else:
+        form = InvitedFamily(initial={'email': invitation.receiver})
+    return render(request, 'Dashboard/invited.html', setReturnedValues(request, {'form': form,
+                                                                                 'uuid': token}))
 
 
 @login_required()

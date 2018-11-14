@@ -18,4 +18,5 @@ urlpatterns = [
     path('invite/add/', views.sendInvitation, name='new-invite'),
     path('invite/', views.invitations, name='invitations'),
     path('register/<int:id>/', views.register, name='register'),
+    path('invited/<token>/', views.invited, name='invited'),
 ]

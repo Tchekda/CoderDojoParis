@@ -3,7 +3,6 @@ from Core.models import User, Invitation, Family
 
 
 class EditUserForm(forms.ModelForm):
-
     class Meta:
         model = User
         fields = ['username', 'type', 'gender']
@@ -73,3 +72,25 @@ class SendInvitation(forms.ModelForm):
             raise forms.ValidationError('une invitation à déjà été envoyée à cette adresse')
 
         return self.cleaned_data
+
+
+class InvitedFamily(forms.ModelForm):
+    family = forms.CharField(label='Nom de Famille',
+                             widget=forms.TextInput(
+                                 attrs={'class': 'form-control', 'placeholder': 'Nom de votre Famille'}))
+
+    class Meta:
+        model = User
+        fields = ['email', 'username', 'type', 'gender']
+        labels = {
+            'email': 'Adresse Mail de contact',
+            'username': 'Prénom',
+            'type': 'Type',
+            'gender': 'Sexe'
+        }
+        widgets = {
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Adresse E-Mail'}),
+            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Votre Prénom'}),
+            'type': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Type'}),
+            'gender': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Sexe'}),
+        }
