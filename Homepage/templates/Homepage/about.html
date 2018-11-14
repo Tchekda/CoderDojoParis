@@ -35,9 +35,9 @@
 {% endblock %}
 
 {% block js %}
-    {% get_static_prefix as STATIC_PREFIX %}
+    {% load static %}
     <script type="text/javascript">
-        let logourl = "{{ STATIC_PREFIX }}" + "Homepage/img/coderdojologo.png";
+        let logourl = "{% static 'Homepage/img/coderdojologo.png' %}"
     </script>
     <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.2.0/build/ol.js"></script>
     <script src="{% static "Homepage/js/osm.js" %}"></script>

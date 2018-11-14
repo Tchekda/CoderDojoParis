@@ -25,6 +25,9 @@ class Event(models.Model):
         default='PLA'
     )
 
+    def get_coord(self):
+        return self.coordinates.split(' : ')
+
     def __str__(self):
         return "Event du %s / %s " % (self.time_from.day, self.time_from.month)
 

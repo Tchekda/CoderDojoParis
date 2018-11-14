@@ -1,4 +1,8 @@
 {% extends 'Dashboard/layout.html' %}
+{% block css %}
+    <link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/css/ol.css"
+          type="text/css">
+{% endblock %}
 {% block body %}
     {% load mathfilters %}
 
@@ -39,8 +43,10 @@
                 {% else %}
                     <div class="callout callout-success">
                         <h4>Ouvert</h4>
-                        <p>L'évènement est ouvert aux inscriptions mais nous n'êtes pas inscrit, allez vite vous inscire:
-                            <a href="{% url 'dashboard:register' event.id %}" class="btn btn-danger">S'inscire Maintenant</a></p>
+                        <p>L'évènement est ouvert aux inscriptions mais nous n'êtes pas inscrit, allez vite vous
+                            inscire:
+                            <a href="{% url 'dashboard:register' event.id %}" class="btn btn-danger">S'inscire
+                                Maintenant</a></p>
                     </div>
                 {% endif %}
             {% elif event.state == 'PRO' %}
@@ -57,6 +63,27 @@
                 {% endif %}
 
             {% else %}
+                <div class="callout callout-danger">
+                    <h4>Terminé</h4>
+                    <p>L'évènement est terminé...</p>
+                </div>
+            {% endif %}
+            <hr>
+            <h3>Informations</h3>
+            <p>L'évènement se déroulera à {{ event.public_adress }}</p>
+            {% if user in event.participants.all %}
+                <h4>Localisation Exacte:</h4>
+                <p>Adresse exacte (Merci de ne pas la partager publiquement) : {{ event.adress }}</p>
+                <div id="OSMap" style="height:650px width: 100%;"></div>
+                <div style="display: none;">
+                    <div id="marker" title="Marker"></div>
+                </div>
+            {% else %}
+                <div class="callout callout-danger">
+                    <h4>Non-Inscrit</h4>
+                    <p>Tant que vous n'êtes pas inscrit, vous ne pouvez pas voir les informations détaillées de cet
+                        évènement</p>
+                </div>
             {% endif %}
         </div>
         <!-- /.box-body -->
@@ -67,4 +94,55 @@
         <!-- box-footer -->
     </div>
     <!-- /.box -->
+{% endblock %}
+{% block scritps %}
+{% load static %}
+    {% if user in event.participants.all %}
+  <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/build/ol.js"></script>
+
+        <script>
+            let iconFeatures = [],
+                coord = [{{ event.get_coord.0 }}, {{ event.get_coord.1 }}],
+                iconFeature = new ol.Feature({
+                    geometry: new ol.geom.Point(ol.proj.transform(coord, 'EPSG:4326',
+                        'EPSG:3857')),
+                    name: 'CoderDojo Paris',
+                });
+
+            iconFeatures.push(iconFeature);
+
+            let vectorSource = new ol.source.Vector({
+                    features: iconFeatures //add an array of features
+                }),
+                iconStyle = new ol.style.Style({
+                    image: new ol.style.Icon(({
+                        anchor: [0.5, 46],
+                        anchorXUnits: 'fraction',
+                        anchorYUnits: 'pixels',
+                        opacity: 0.75,
+                        scale: 0.2,
+                        src: "{% static 'Homepage/img/coderdojologo.png' %}"
+                    }))
+                }),
+
+                vectorLayer = new ol.layer.Vector({
+                    source: vectorSource,
+                    style: iconStyle
+                });
+
+            map = new ol.Map({
+                target: 'OSMap',
+                layers: [
+                    new ol.layer.Tile({
+                        source: new ol.source.OSM()
+                    }),
+                    vectorLayer
+                ],
+                view: new ol.View({
+                    center: ol.proj.fromLonLat(coord),
+                    zoom: 16
+                })
+            });
+        </script>
+    {% endif %}
 {% endblock %}

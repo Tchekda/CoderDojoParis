@@ -86,7 +86,7 @@
                                         class="fa fa-plus"></i> Ajouter un membre</a></li>
                             </ul>
                         </li>
-                        {% if user.type == 'STA' and families %}
+                        {% if user.is_staff and families %}
                             <li>
                                 <a href="{% url 'dashboard:families' %}"><i class="fa fa-search"></i> Trouver une
                                     famille</a>
