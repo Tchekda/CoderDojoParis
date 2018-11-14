@@ -21,11 +21,6 @@ class CoreTestCase(TestCase):
             User.objects.create_user(name='Antoine', familyname='Doe', email='contact@tchekda.fr')
         self.assertEqual("UNIQUE constraint failed: Core_family.email", str(ctx.exception))
 
-    def testUniqueEntries(self):
-        with self.assertRaises(IntegrityError) as ctx:
-            User.objects.create_user(name='David', familyname='Tchekachev', email='contact@tchekda.fr')
-        self.assertEqual("UNIQUE constraint failed: Core_user.username", str(ctx.exception))
-
     def testWorkshopManager(self):
         with self.assertRaises(ValidationError) as ctx:
             workshop = Workshop.objects.get(name='Atelier1')
