@@ -87,7 +87,6 @@ class UserManager(BaseUserManager):
             EmailValidator()(user.email)
         except ValidationError:
             raise ValueError('Adresse Email invalide, veuillez en saisir une valide!')
-
         user.save(using=self._db)
         return user
 
