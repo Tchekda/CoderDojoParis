@@ -59,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.middleware.security.SecurityMiddleware',
 ]
 
 ROOT_URLCONF = 'CoderDojoParis.urls'
@@ -155,7 +156,8 @@ if not DEBUG:
 
     # Activate Django-Heroku.
     django_heroku.settings(locals())
-    SECURE_SSL_REDIRECT: True
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 else:
     CACHES = {
         'default': {
