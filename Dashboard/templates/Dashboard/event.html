@@ -18,73 +18,102 @@
         </div>
         <!-- /.box-header -->
         <div class="box-body">
-            <h3>Les inscriptions:</h3>
-            <p>{{ event.participants.count }} personnes sont inscrites sur un total de {{ event.max_students }}</p>
-            <div class="progress active">
-                <div class="progress-bar progress-bar-success progress-bar-striped" role="progressbar"
-                     aria-valuenow="{{ event.participants.count }}" aria-valuemin="0"
-                     aria-valuemax="{{ event.max_students }}"
-                     style="width: {% widthratio event.participants.count event.max_students 100 %}%">
-                    <span class="sr-only"></span>
+            <div class="box box-success">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Inscriptions</h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                class="fa fa-minus"></i>
+                        </button>
+                        <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <p>{{ event.participants.count }} personnes sont inscrites sur un total
+                        de {{ event.max_students }}</p>
+                    <div class="progress active">
+                        <div class="progress-bar progress-bar-success progress-bar-striped" role="progressbar"
+                             aria-valuenow="{{ event.participants.count }}" aria-valuemin="0"
+                             aria-valuemax="{{ event.max_students }}"
+                             style="width: {% widthratio event.participants.count event.max_students 100 %}%">
+                            <span class="sr-only"></span>
+                        </div>
+                    </div>
+                    {% if event.state == 'PLA' %}
+                        <div class="callout callout-info">
+                            <h4>Prévu</h4>
+
+                            <p>L'évènement est prévu et les inscriptions ne sont pas encore ouvertes. Attendez un
+                                peu...</p>
+                        </div>
+                    {% elif event.state == 'REG' %}
+                        {% if user in event.participants.all %}
+                            <div class="callout callout-success">
+                                <h4>Inscrit</h4>
+                                <p>L'évènement est ouvert aux inscriptions et vous êtes déjà inscrit, Super!</p>
+                            </div>
+                        {% else %}
+                            <div class="callout callout-success">
+                                <h4>Ouvert</h4>
+                                <p>L'évènement est ouvert aux inscriptions mais nous n'êtes pas inscrit, allez vite vous
+                                    inscire:
+                                    <a href="{% url 'dashboard:register' event.id %}" class="btn btn-danger">S'inscire
+                                        Maintenant</a></p>
+                            </div>
+                        {% endif %}
+                    {% elif event.state == 'PRO' %}
+                        {% if user in event.participants.all %}
+                            <div class="callout callout-success">
+                                <h4>En Cours</h4>
+                                <p>L'évènement est en cours et vous y êtes inscrit!</p>
+                            </div>
+                        {% else %}
+                            <div class="callout callout-danger">
+                                <h4>En Cours</h4>
+                                <p>L'évènement est en cours et vous ne pouvez plus vous y inscrire ;(</p>
+                            </div>
+                        {% endif %}
+
+                    {% else %}
+                        <div class="callout callout-danger">
+                            <h4>Terminé</h4>
+                            <p>L'évènement est terminé...</p>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
-            {% if event.state == 'PLA' %}
-                <div class="callout callout-info">
-                    <h4>Prévu</h4>
+            <div class="box box-primary">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Informations</h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                                class="fa fa-minus"></i>
+                        </button>
+                        <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <p>L'évènement se déroulera à {{ event.public_adress }}</p>
+                    {% if user in event.participants.all %}
+                        <h4>Localisation Exacte:</h4>
+                        <p>Adresse exacte (Merci de ne pas la partager publiquement) : {{ event.adress }}</p>
+                        <div id="OSMap" style="height:650px; width: 100%;"></div>
+                        <div style="display: none;">
+                            <div id="marker" title="Marker"></div>
+                        </div>
+                    {% else %}
+                        <div class="callout callout-danger">
+                            <h4>Non-Inscrit</h4>
+                            <p>Tant que vous n'êtes pas inscrit, vous ne pouvez pas voir les informations détaillées de
+                                cet
+                                évènement</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
 
-                    <p>L'évènement est prévu et les inscriptions ne sont pas encore ouvertes. Attendez un peu...</p>
-                </div>
-            {% elif event.state == 'REG' %}
-                {% if user in event.participants.all %}
-                    <div class="callout callout-success">
-                        <h4>Inscrit</h4>
-                        <p>L'évènement est ouvert aux inscriptions et vous êtes déjà inscrit, Super!</p>
-                    </div>
-                {% else %}
-                    <div class="callout callout-success">
-                        <h4>Ouvert</h4>
-                        <p>L'évènement est ouvert aux inscriptions mais nous n'êtes pas inscrit, allez vite vous
-                            inscire:
-                            <a href="{% url 'dashboard:register' event.id %}" class="btn btn-danger">S'inscire
-                                Maintenant</a></p>
-                    </div>
-                {% endif %}
-            {% elif event.state == 'PRO' %}
-                {% if user in event.participants.all %}
-                    <div class="callout callout-success">
-                        <h4>En Cours</h4>
-                        <p>L'évènement est en cours et vous y êtes inscrit!</p>
-                    </div>
-                {% else %}
-                    <div class="callout callout-danger">
-                        <h4>En Cours</h4>
-                        <p>L'évènement est en cours et vous ne pouvez plus vous y inscrire ;(</p>
-                    </div>
-                {% endif %}
-
-            {% else %}
-                <div class="callout callout-danger">
-                    <h4>Terminé</h4>
-                    <p>L'évènement est terminé...</p>
-                </div>
-            {% endif %}
-            <hr>
-            <h3>Informations</h3>
-            <p>L'évènement se déroulera à {{ event.public_adress }}</p>
-            {% if user in event.participants.all %}
-                <h4>Localisation Exacte:</h4>
-                <p>Adresse exacte (Merci de ne pas la partager publiquement) : {{ event.adress }}</p>
-                <div id="OSMap" style="height:650px width: 100%;"></div>
-                <div style="display: none;">
-                    <div id="marker" title="Marker"></div>
-                </div>
-            {% else %}
-                <div class="callout callout-danger">
-                    <h4>Non-Inscrit</h4>
-                    <p>Tant que vous n'êtes pas inscrit, vous ne pouvez pas voir les informations détaillées de cet
-                        évènement</p>
-                </div>
-            {% endif %}
         </div>
         <!-- /.box-body -->
         <div class="box-footer">
@@ -96,9 +125,9 @@
     <!-- /.box -->
 {% endblock %}
 {% block scritps %}
-{% load static %}
+    {% load static %}
     {% if user in event.participants.all %}
-  <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/build/ol.js"></script>
+        <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/build/ol.js"></script>
 
         <script>
             let iconFeatures = [],
@@ -120,7 +149,7 @@
                         anchorXUnits: 'fraction',
                         anchorYUnits: 'pixels',
                         opacity: 0.75,
-                        scale: 0.2,
+                        scale: 0.07,
                         src: "{% static 'Homepage/img/coderdojologo.png' %}"
                     }))
                 }),
@@ -140,7 +169,7 @@
                 ],
                 view: new ol.View({
                     center: ol.proj.fromLonLat(coord),
-                    zoom: 16
+                    zoom: 20
                 })
             });
         </script>

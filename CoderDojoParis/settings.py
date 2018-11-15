@@ -26,7 +26,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ['SECRET_KEY']
 #  SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', False)
+if os.environ.get('DEBUG', False) == 'True' or os.environ.get('DEBUG', False) is True:
+    DEBUG = True
+else:
+    DEBUG = False
+
 TEMPLATE_DEBUG = DEBUG
 
 ALLOWED_HOSTS = ['localhost']
@@ -142,7 +146,6 @@ ADMINS = [('Tchekda', 'test-error@tchekda.fr')]
 
 # Disable Cache while dev
 if not DEBUG:
-    SECURE_SSL_REDIRECT: True
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -152,6 +155,7 @@ if not DEBUG:
 
     # Activate Django-Heroku.
     django_heroku.settings(locals())
+    SECURE_SSL_REDIRECT: True
 else:
     CACHES = {
         'default': {
