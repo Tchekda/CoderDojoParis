@@ -84,6 +84,8 @@
                                 {% endfor %}
                                 <li><a href="{% url 'dashboard:add-member' %}"><i
                                         class="fa fa-plus"></i> Ajouter un membre</a></li>
+                                <li><a href="{% url 'dashboard:edit-family' family.0.family.id %}"><i
+                                        class="fa fa-edit"></i> Editer les Informations</a></li>
                             </ul>
                         </li>
                         {% if user.is_staff and families %}
@@ -115,6 +117,27 @@
                     </li>
                 </ul>
             </li>
+            {% if user.is_staff %}
+                <li class="treeview">
+                    <a href="#">
+                        <i class="fa fa-lock"></i>
+                        <span>Administration</span>
+                        <span class="pull-right-container">
+                                <span class="pull-right-container">
+                                  <i class="fa fa-angle-left pull-right"></i>
+                                </span>
+                        </span>
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="{% url 'dashboard:new-invite' %}"><i class="fa fa-edit"></i> Editer les textes</a>
+                        </li>
+                        <li>
+                            <a href="/admin/" target="_blank"><i class="fa fa-circle-o"></i> Admin Django</a>
+                        </li>
+                    </ul>
+                </li>
+            {% endif %}
         </ul>
     </section>
 

@@ -14,6 +14,7 @@
           integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
     <link rel="stylesheet" href="{% static "Homepage/css/homepage.css" %}">
     <link rel="stylesheet" href="{% static "Homepage/css/footer.css" %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.css" rel="stylesheet">
     {% block css %}
     {% endblock %}
 </head>
@@ -31,6 +32,8 @@
     {% endblock %}
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.js"></script>
+<script src="{% static 'Core/js/noty.js' %}"></script>
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
         crossorigin="anonymous"></script>
@@ -39,6 +42,20 @@
         crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
         integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
-        crossorigin="anonymous"></script>
+        crossorigin="anonymous"></script><script>
+    (function ($) {
+
+        {% if notifications %}
+            {% for notification in notifications %}
+                console.log('{{ notification.type }}');
+
+                new Noty({
+                    text: '{{ notification.text }}',
+                    type: '{{ notification.type }}'
+                }).show();
+            {% endfor %}
+        {% endif %}
+    })(jQuery)
+</script>
 </body>
 </html>

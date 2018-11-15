@@ -14,6 +14,7 @@ urlpatterns = [
     path('user/delete/<int:id>', views.userDelete, name='user-delete'),
     path('family/', views.families, name='families'),
     path('family/add/', views.addMember, name='add-member'),
+    path('family/edit/<int:id>/', views.editFamily, name='edit-family'),
     path('family/<int:id>/', views.families, name='family'),
     path('invite/add/', views.sendInvitation, name='new-invite'),
     path('invite/', views.invitations, name='invitations'),

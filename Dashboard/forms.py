@@ -1,5 +1,5 @@
 from django import forms
-from Core.models import User, Invitation, Family
+from Core.models import User, Invitation, Family, Event
 
 
 class EditUserForm(forms.ModelForm):
@@ -93,4 +93,43 @@ class InvitedFamily(forms.ModelForm):
             'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Votre Prénom'}),
             'type': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Type'}),
             'gender': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Sexe'}),
+        }
+
+
+class EditEvent(forms.ModelForm):
+    time = forms.CharField(
+        widget=forms.TextInput(attrs={'id': 'datepicker', 'class': 'form-control', 'placeholder': 'Horaires'}),
+        label='Horaires')
+
+    class Meta:
+        model = Event
+        fields = ['public_adress', 'adress', 'max_students', 'participants', 'state']
+        labels = {
+            'public_adress': 'Adresse Publique',
+            'adress': 'Adresse Privée',
+            'max_students': 'Nombre Maximal de Participants',
+            'participants': 'Préinscription',
+            'state': 'Etat',
+        }
+        widgets = {
+            'public_adress': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Adresse Publique'}),
+            'adress': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Adresse Privée'}),
+            'max_students': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de participants'}),
+            'participants': forms.SelectMultiple(attrs={'class': 'form-control', 'placeholder': 'Préinscrits'}),
+            'state': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Etat'}),
+        }
+
+
+class EditFamily(forms.ModelForm):
+
+    class Meta:
+        model = Family
+        fields = ['email', 'name']
+        labels = {
+            'email': 'Adresse E-Mail',
+            'name': 'Nom de Famille',
+        }
+        widgets = {
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Adresse E-Mail'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nom de Famille'}),
         }

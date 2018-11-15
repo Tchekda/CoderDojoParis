@@ -144,7 +144,7 @@ EMAIL_HOST_USER = os.environ['EMAIL_USER']
 EMAIL_HOST_PASSWORD = os.environ['EMAIL_PASS']
 EMAIL_USE_TLS = True
 ADMINS = [('Tchekda', 'test-error@tchekda.fr')]
-
+GOOGLE_API = os.environ['GOOGLE_API']
 # Disable Cache while dev
 if not DEBUG:
     CACHES = {

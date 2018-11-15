@@ -17,6 +17,7 @@
                     <th>Id</th>
                     <th>Nom</th>
                     <th>Nombre de Participants</th>
+                    <th>Editer</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -25,6 +26,8 @@
                         <td><a href="{% url 'dashboard:family' familly.id %}">{{ familly.id }}</a></td>
                         <td>{{ familly.name }}</td>
                         <td>{{ familly.get_number }}</td>
+                        <td><a href="{% url 'dashboard:edit-family' familly.id %}"><span class="badge bg-green"><i
+                                class="fa fa-edit"></i></span></a></td>
                     </tr>
                 {% endfor %}
                 </tbody>

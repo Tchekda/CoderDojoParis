@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+import requests
 
 
 class Event(models.Model):
@@ -9,12 +10,12 @@ class Event(models.Model):
     public_adress = models.CharField(max_length=120)
     adress = models.CharField(max_length=120)
     max_students = models.IntegerField(default=30)
-    coordinates = models.CharField(max_length=50)  # xxxxxxxxx:yyyyyyyyy for OpenStreetMap
+    coordinates = models.CharField(max_length=100, blank=True)  # xxxxxxxxx:yyyyyyyyy for OpenStreetMap
     participants = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
 
     STATES = (
         ('PLA', 'Planned'),
-        ('REG', 'Registrations'),
+        ('REG', 'Registration'),
         ('PRO', 'In Progress'),
         ('FIN', 'Finished')
     )
@@ -24,6 +25,20 @@ class Event(models.Model):
         max_length=3,
         default='PLA'
     )
+
+    def save(self, *args, **kwargs):
+        api_response = requests.get(
+            'https://maps.googleapis.com/maps/api/geocode/json?address={0}&key={1}'.format(self.adress,
+                                                                                           settings.GOOGLE_API))
+        api_response_dict = api_response.json()
+        if api_response_dict['status'] == 'OK':
+            latitude = api_response_dict['results'][0]['geometry']['location']['lat']
+            longitude = api_response_dict['results'][0]['geometry']['location']['lng']
+            self.coordinates = "%s : %s" % (longitude, latitude)
+        else:
+            raise ValidationError("API error : %s" % api_response_dict)
+
+        super().save(*args, **kwargs)
 
     def get_coord(self):
         return self.coordinates.split(' : ')

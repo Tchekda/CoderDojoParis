@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.conf import settings
 from django.contrib.auth import login, logout
 from Core.models import Workshop, User, Event, Family, Invitation
-from .forms import EditUserForm, AddMember, SendInvitation, InvitedFamily
+from .forms import EditUserForm, AddMember, SendInvitation, InvitedFamily, EditEvent, EditFamily
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
@@ -110,6 +110,44 @@ def families(request, id=None):
 
 
 @login_required()
+def editFamily(request, id):
+    try:
+        family = Family.objects.get(id=id)
+    except Family.DoesNotExist:
+        request.session['notifications'] = [
+            {'text': 'Famille Introuvable ', 'type': 'error'}]
+        return redirect(reverse('dashboard:index'))
+    if request.user.family.id is family.id or request.user.is_staff:
+        if request.POST:
+            oldfamily = family
+            form = EditFamily(request.POST, instance=family)
+            if form.is_valid():
+                cleaned = form.cleaned_data
+                try:
+                    for user in User.objects.filter(family=family):
+                        user.email = cleaned['email']
+                        user.save()
+                except User.DoesNotExist:
+                    pass
+
+                form.save()
+                request.session['notifications'] = [
+                    {'text': "Les informations ont bien été mises à jour!",
+                     'type': 'success'}]
+                return redirect(reverse('dashboard:edit-family', kwargs={'id': family.id}))
+
+        else:
+            form = EditFamily(instance=family)
+        return render(request, 'Dashboard/editFamily.html', setReturnedValues(request, {'form': form}))
+
+    else:
+        request.session['notifications'] = [
+            {'text': "Vous ne pouvez accéder à cette page",
+             'type': 'error'}]
+        return redirect(reverse('dashboard:index'))
+
+
+@login_required()
 def addMember(request):
     if request.POST:
         form = AddMember(request.POST, initial={'family': str(request.user.family), 'email': request.user.family.email,
@@ -184,8 +222,80 @@ def eventView(request, id):
         event = Event.objects.get(id=id)
     except (Event.DoesNotExist, Event.MultipleObjectsReturned):
         raise Http404('Evènement introuvable')
+
+    if request.POST:
+        oldevent = event
+        form = EditEvent(request.POST, instance=event)
+        if form.is_valid():
+            cleaned = form.cleaned_data
+            if oldevent.state != cleaned['state'] and cleaned['state'] == 'REG':
+                sent = []
+                for family in Family.objects.all():
+                    if family.email not in sent:
+                        subject, from_email, to = 'Inscriptions ouvertes pour le Coder Dojo Paris du %s' % event.time_from.strftime(
+                            "%d %b %Y").title(), settings.EMAIL_HOST_USER, family.email
+
+                        html_content = render_to_string('mail/inscriptions_open.html',
+                                                        {'date': event.time_from.strftime(
+                                                            "%d %b %Y").title(),
+                                                         'link': request.build_absolute_uri(
+                                                             reverse('dashboard:event', kwargs={
+                                                                 'id': event.id}))})  # render with dynamic value
+                        text_content = strip_tags(
+                            html_content)  # Strip the html tag. So people can see the pure text at least.
+
+                        # create the email, and attach the HTML version as well.
+                        msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+                        msg.attach_alternative(html_content, "text/html")
+                        msg.send()
+
+                for user in User.objects.all():
+                    if user.email not in sent:
+                        subject, from_email, to = 'Inscriptions ouvertes pour le Coder Dojo Paris du %s' % event.time_from.strftime(
+                            "%d %b %Y").title(), settings.EMAIL_HOST_USER, user.email
+
+                        html_content = render_to_string('mail/inscriptions_open.html',
+                                                        {'date': event.time_from.strftime(
+                                                            "%d %b %Y").title(),
+                                                         'link': request.build_absolute_uri(
+                                                             reverse('dashboard:event', kwargs={
+                                                                 'id': event.id}))})  # render with dynamic value
+                        text_content = strip_tags(
+                            html_content)  # Strip the html tag. So people can see the pure text at least.
+
+                        # create the email, and attach the HTML version as well.
+                        msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+                        msg.attach_alternative(html_content, "text/html")
+                        msg.send()
+
+                request.session['notifications'] = [
+                    {'text': "L'évènement à bien été mis à jour et les invitations ont bien été envoyées",
+                     'type': 'success'}]
+
+            else:
+                if cleaned['participants'] and event.participants is not cleaned['participants']:
+                    for participant in cleaned['participants']:
+                        event.participants.add(request.user)
+                        subject, from_email, to = 'Confirmation pour Coder Dojo Paris du %s' % event.time_from.strftime(
+                            "%d %b %Y").title(), settings.EMAIL_HOST_USER, participant.email
+
+                        html_content = render_to_string('mail/register_confirmation.html',
+                                                        {'event': event})  # render with dynamic value
+                        text_content = strip_tags(
+                            html_content)  # Strip the html tag. So people can see the pure text at least.
+
+                        # create the email, and attach the HTML version as well.
+                        msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+                        msg.attach_alternative(html_content, "text/html")
+                        msg.send()
+                request.session['notifications'] = [
+                    {'text': "L'évènement à bien été mis à jour",
+                     'type': 'success'}]
+            form.save()
+            return redirect(reverse('dashboard:event', kwargs={'id': event.id}))
     else:
-        return render(request, 'Dashboard/event.html', setReturnedValues(request, {'event': event}))
+        form = EditEvent(instance=event)
+    return render(request, 'Dashboard/event.html', setReturnedValues(request, {'event': event, 'form': form}))
 
 
 @login_required()
