@@ -25,15 +25,30 @@ def index(request):  # Landing page
 
 def events(request):  # List of events
     return render(request, 'Homepage/events.html',
-                  {'events': Event.objects.filter(time_from__gte=datetime.datetime.now(tz=timezone.utc))})
+                  setReturnedValues(request, {
+                      'events': Event.objects.filter(time_from__gte=datetime.datetime.now(tz=timezone.utc))}))
 
 
 def staff(request):  # List of Staff
-    return render(request, 'Homepage/staff.html', {'staff': User.objects.filter(type='STA')})
+    return render(request, 'Homepage/staff.html',
+                  setReturnedValues(request, {'staff': User.objects.filter(type='STA')}))
 
 
 def about(request):  # More about the association
-    return render(request, 'Homepage/about.html')
+    data = {}
+    try:
+        data['where'] = Text.objects.get(type='where')
+    except Text.DoesNotExist:
+        pass
+    try:
+        data['joinus'] = Text.objects.get(type='joinus')
+    except Text.DoesNotExist:
+        pass
+    try:
+        data['whatis'] = Text.objects.get(type='whatis')
+    except Text.DoesNotExist:
+        pass
+    return render(request, 'Homepage/about.html', setReturnedValues(request, data))
 
 
 def setReturnedValues(request, args=None):
@@ -46,8 +61,7 @@ def setReturnedValues(request, args=None):
 
     default_data = {}
     try:
-        footer = Text.objects.get(type='footer')
-        default_data['footer'] = footer
+        default_data['footer'] = Text.objects.get(type='footer')
     except Text.DoesNotExist:
         pass
 

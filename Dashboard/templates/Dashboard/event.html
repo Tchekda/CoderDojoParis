@@ -3,7 +3,7 @@
     {% load static %}
     <link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/css/ol.css"
           type="text/css">
-    <link rel="stylesheet" href="{% static 'Dashboard/css/daterangepicker.css' %}">
+    <link rel="stylesheet" href="{% static 'Dashboard/css/bootstrap-datetimepicker.min.css' %}">
 {% endblock %}
 {% block body %}
     {% load mathfilters %}
@@ -214,17 +214,10 @@
         </script>
     {% endif %}
     {% if user.is_staff %}
-        <script src="{% static 'Dashboard/js/moment.min.js' %}"></script>
-        <script src="{% static 'Dashboard/js/daterangepicker.js' %}"></script>
+        <script src="{% static 'Dashboard/js/bootstrap-datetimepicker.min.js' %}"></script>
         <script>
-            $(function () {
-                $('#datepicker').daterangepicker({
-                    timePicker: true,
-                    timePickerIncrement: 30,
-                    format: 'DD/MM/YYYY hh:mm'
-                })
-
-            })
+            type = "text/javascript" >
+                $(".datepicker").datetimepicker({format: 'yyyy-mm-dd hh:ii'});
         </script>
     {% endif %}
 {% endblock %}

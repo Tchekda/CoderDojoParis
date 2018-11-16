@@ -1,0 +1,67 @@
+{% extends 'Dashboard/layout.html' %}
+{% block css %}
+    {% load static %}
+
+{% endblock %}
+{% block body %}
+
+    <div class="box box-danger">
+        <div class="box-header with-border">
+            <div class="box-header with-border">
+                <h3 class="box-title">Configuration</h3>
+                <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-box-tool" data-widget="collapse"><i
+                            class="fa fa-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-box-tool" data-widget="remove"><i
+                            class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="box-body">
+                {% if type == 'mail' %}
+                    <p>Les Abbréviations:</p>
+                    <ul>
+                        <li>%family% : Nom de famille qui invite</li>
+                        <li>%message% : Message laisser par la famille</li>
+                        <li>%joinurl% : URL pour rejoindre</li>
+                        <li>%date% : Pour les évènements</li>
+                    </ul>
+                {% elif type == 'text' %}
+                {% elif type == 'image' %}
+                {% endif %}
+
+                <form id="form" method="post" role="form"
+                      action="{% url 'dashboard:edition-item' type id %}">
+                    {% csrf_token %}
+                    {% for error in form.non_field_errors %}
+                        <div class="form-group has-errors text-danger small">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                    {% for field in form %}
+                        <div class="form-group has-errors text-danger small">
+                            {{ field.errors }}
+                        </div>
+                        <div class="form-group">
+                            {{ field.label }}
+                            {{ field }}
+                        </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-success">Enregistrer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scritps %}
+    {% load static %}
+    <script src="{% static 'Dashboard/js/ckeditor/ckeditor.js' %}"></script>
+    <script>
+        $(function () {
+            CKEDITOR.replace('ckeditor', {
+                extraPlugins: 'colorbutton'
+            })
+        })
+    </script>
+{% endblock %}

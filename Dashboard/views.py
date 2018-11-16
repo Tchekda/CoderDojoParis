@@ -14,6 +14,7 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from Homepage.models import SliderImage, Text
 from .models import Mail
+from Homepage.forms import *
 
 
 # Create your views here.
@@ -291,15 +292,24 @@ def eventView(request, id):
                 sent = []
                 for family in Family.objects.all():
                     if family.email not in sent:
-                        subject, from_email, to = 'Inscriptions ouvertes pour le Coder Dojo Paris du %s' % event.time_from.strftime(
-                            "%d %b %Y").title(), settings.EMAIL_HOST_USER, family.email
+                        try:
+                            mail = Mail.objects.get(type='register_open')
+                            subject, from_email, to = mail.subject.replace('%date%', event.time_from.strftime(
+                                "%d %b %Y").title()), settings.EMAIL_HOST_USER, family.email
+                            html_content = mail.content.replace("%date%", event.time_from.strftime(
+                                "%d %b %Y").title()).replace("%joinurl%", request.build_absolute_uri(
+                                reverse('dashboard:event', kwargs={
+                                    'id': event.id})))
+                        except (Mail.DoesNotExist, Mail.MultipleObjectsReturned):
+                            subject, from_email, to = 'Inscriptions ouvertes pour le Coder Dojo Paris du %s' % event.time_from.strftime(
+                                "%d %b %Y").title(), settings.EMAIL_HOST_USER, family.email
 
-                        html_content = render_to_string('mail/inscriptions_open.html',
-                                                        {'date': event.time_from.strftime(
-                                                            "%d %b %Y").title(),
-                                                         'link': request.build_absolute_uri(
-                                                             reverse('dashboard:event', kwargs={
-                                                                 'id': event.id}))})  # render with dynamic value
+                            html_content = render_to_string('mail/inscriptions_open.html',
+                                                            {'date': event.time_from.strftime(
+                                                                "%d %b %Y").title(),
+                                                             'link': request.build_absolute_uri(
+                                                                 reverse('dashboard:event', kwargs={
+                                                                     'id': event.id}))})  # render with dynamic value
                         text_content = strip_tags(
                             html_content)  # Strip the html tag. So people can see the pure text at least.
 
@@ -310,15 +320,24 @@ def eventView(request, id):
 
                 for user in User.objects.all():
                     if user.email not in sent:
-                        subject, from_email, to = 'Inscriptions ouvertes pour le Coder Dojo Paris du %s' % event.time_from.strftime(
-                            "%d %b %Y").title(), settings.EMAIL_HOST_USER, user.email
+                        try:
+                            mail = Mail.objects.get(type='register_open')
+                            subject, from_email, to = mail.subject.replace('%date%', event.time_from.strftime(
+                                "%d %b %Y").title()), settings.EMAIL_HOST_USER, user.email
+                            html_content = mail.content.replace("%date%", event.time_from.strftime(
+                                "%d %b %Y").title()).replace("%joinurl%", request.build_absolute_uri(
+                                reverse('dashboard:event', kwargs={
+                                    'id': event.id})))
+                        except (Mail.DoesNotExist, Mail.MultipleObjectsReturned):
+                            subject, from_email, to = 'Inscriptions ouvertes pour le Coder Dojo Paris du %s' % event.time_from.strftime(
+                                "%d %b %Y").title(), settings.EMAIL_HOST_USER, user.email
 
-                        html_content = render_to_string('mail/inscriptions_open.html',
-                                                        {'date': event.time_from.strftime(
-                                                            "%d %b %Y").title(),
-                                                         'link': request.build_absolute_uri(
-                                                             reverse('dashboard:event', kwargs={
-                                                                 'id': event.id}))})  # render with dynamic value
+                            html_content = render_to_string('mail/inscriptions_open.html',
+                                                            {'date': event.time_from.strftime(
+                                                                "%d %b %Y").title(),
+                                                             'link': request.build_absolute_uri(
+                                                                 reverse('dashboard:event', kwargs={
+                                                                     'id': event.id}))})  # render with dynamic value
                         text_content = strip_tags(
                             html_content)  # Strip the html tag. So people can see the pure text at least.
 
@@ -335,11 +354,18 @@ def eventView(request, id):
                 for participant in cleaned['participants']:
                     if participant not in oldpart:
                         event.participants.add(participant)
-                        subject, from_email, to = 'Confirmation pour Coder Dojo Paris du %s' % event.time_from.strftime(
-                            "%d %b %Y").title(), settings.EMAIL_HOST_USER, participant.email
+                        try:
+                            mail = Mail.objects.get(type='register_confirmation')
+                            subject, from_email, to = mail.subject.replace('%date%', event.time_from.strftime(
+                                "%d %b %Y").title()), settings.EMAIL_HOST_USER, participant.email
+                            html_content = mail.content.replace("%date%", event.time_from.strftime(
+                                "%d %b %Y").title())
+                        except Mail.DoesNotExist:
+                            subject, from_email, to = 'Confirmation pour Coder Dojo Paris du %s' % event.time_from.strftime(
+                                "%d %b %Y").title(), settings.EMAIL_HOST_USER, participant.email
 
-                        html_content = render_to_string('mail/register_confirmation.html',
-                                                        {'event': event})  # render with dynamic value
+                            html_content = render_to_string('mail/register_confirmation.html',
+                                                            {'event': event})  # render with dynamic value
                         text_content = strip_tags(
                             html_content)  # Strip the html tag. So people can see the pure text at least.
 
@@ -369,22 +395,92 @@ def addEvent(request):
         form = EventForm(request.POST)
         if form.is_valid():
             event = form.save()
+            sent = []
             for participant in event.participants.all():
                 subject, from_email, to = 'Confirmation pour Coder Dojo Paris du %s' % event.time_from.strftime(
                     "%d %b %Y").title(), settings.EMAIL_HOST_USER, participant.email
-
-                html_content = render_to_string('mail/register_confirmation.html',
-                                                {'event': event})  # render with dynamic value
-                text_content = strip_tags(
-                    html_content)  # Strip the html tag. So people can see the pure text at least.
-
+                sent.append(participant.email)
+                try:
+                    mail = Mail.objects.get(type='register_confirmation')
+                    subject, from_email, to = mail.subject.replace('%date%', event.time_from.strftime(
+                        "%d %b %Y").title()), settings.EMAIL_HOST_USER, request.user.email
+                    html_content = mail.content.replace("%date%", event.time_from.strftime(
+                        "%d %b %Y").title())
+                    text_content = strip_tags(
+                        html_content)
+                except Mail.DoesNotExist:
+                    html_content = render_to_string('mail/register_confirmation.html',
+                                                    {'event': event})  # render with dynamic value
+                    text_content = strip_tags(
+                        html_content)
                 # create the email, and attach the HTML version as well.
                 msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
                 msg.attach_alternative(html_content, "text/html")
                 msg.send()
-            request.session['notifications'] = [
-                {'text': "L'évent a bien été créé!",
-                 'type': 'success'}]
+            if event.state == 'REG':
+                for family in Family.objects.all():
+                    if family.email not in sent:
+                        try:
+                            mail = Mail.objects.get(type='register_open')
+                            subject, from_email, to = mail.subject.replace('%date%', event.time_from.strftime(
+                                "%d %b %Y").title()), settings.EMAIL_HOST_USER, family.email
+                            html_content = mail.content.replace("%date%", event.time_from.strftime(
+                                "%d %b %Y").title()).replace("%joinurl%", request.build_absolute_uri(
+                                reverse('dashboard:event', kwargs={
+                                    'id': event.id})))
+                        except (Mail.DoesNotExist, Mail.MultipleObjectsReturned):
+                            subject, from_email, to = 'Inscriptions ouvertes pour le Coder Dojo Paris du %s' % event.time_from.strftime(
+                                "%d %b %Y").title(), settings.EMAIL_HOST_USER, family.email
+
+                            html_content = render_to_string('mail/inscriptions_open.html',
+                                                            {'date': event.time_from.strftime(
+                                                                "%d %b %Y").title(),
+                                                             'link': request.build_absolute_uri(
+                                                                 reverse('dashboard:event', kwargs={
+                                                                     'id': event.id}))})  # render with dynamic value
+                        text_content = strip_tags(
+                            html_content)  # Strip the html tag. So people can see the pure text at least.
+
+                        # create the email, and attach the HTML version as well.
+                        msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+                        msg.attach_alternative(html_content, "text/html")
+                        msg.send()
+
+                for user in User.objects.all():
+                    if user.email not in sent:
+                        try:
+                            mail = Mail.objects.get(type='register_open')
+                            subject, from_email, to = mail.subject.replace('%date%', event.time_from.strftime(
+                                "%d %b %Y").title()), settings.EMAIL_HOST_USER, user.email
+                            html_content = mail.content.replace("%date%", event.time_from.strftime(
+                                "%d %b %Y").title()).replace("%joinurl%", request.build_absolute_uri(
+                                reverse('dashboard:event', kwargs={
+                                    'id': event.id})))
+                        except (Mail.DoesNotExist, Mail.MultipleObjectsReturned):
+                            subject, from_email, to = 'Inscriptions ouvertes pour le Coder Dojo Paris du %s' % event.time_from.strftime(
+                                "%d %b %Y").title(), settings.EMAIL_HOST_USER, user.email
+
+                            html_content = render_to_string('mail/inscriptions_open.html',
+                                                            {'date': event.time_from.strftime(
+                                                                "%d %b %Y").title(),
+                                                             'link': request.build_absolute_uri(
+                                                                 reverse('dashboard:event', kwargs={
+                                                                     'id': event.id}))})  # render with dynamic value
+                        text_content = strip_tags(
+                            html_content)  # Strip the html tag. So people can see the pure text at least.
+
+                        # create the email, and attach the HTML version as well.
+                        msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+                        msg.attach_alternative(html_content, "text/html")
+                        msg.send()
+
+                request.session['notifications'] = [
+                    {'text': "L'évènement à bien été créer et les invitations ont bien été envoyées",
+                     'type': 'success'}]
+            else:
+                request.session['notifications'] = [
+                    {'text': "L'évent a bien été créé!",
+                     'type': 'success'}]
             return redirect(reverse('dashboard:event', kwargs={'id': event.id}))
         else:
             request.session['notifications'] = [
@@ -422,11 +518,20 @@ def sendInvitation(request):
             invitation = Invitation(token=uuid.uuid4(), sender=request.user.family, receiver=cleaned['receiver'],
                                     message=cleaned['message'])
             invitation.save()
-            subject, from_email, to = 'Invitation au Coder-Dojo Paris par %s' % request.user.get_short_name(), settings.EMAIL_HOST_USER, invitation.receiver
+            try:
+                mail = Mail.objects.get(type='invitation')
+                subject, from_email, to = mail.subject.replace('%family%', invitation.sender.name), \
+                                          settings.EMAIL_HOST_USER, invitation.receiver
+                html_content = mail.content.replace("%family%", invitation.sender.name).replace('%message%',
+                                                                                                invitation.message).replace(
+                    "%joinurl%", request.build_absolute_uri(
+                        reverse('dashboard:invited', kwargs={'token': invitation.token})))
+            except (Mail.DoesNotExist, Mail.MultipleObjectsReturned):
+                subject, from_email, to = 'Invitation au Coder-Dojo Paris par %s' % request.user.get_short_name(), settings.EMAIL_HOST_USER, invitation.receiver
+                html_content = render_to_string('mail/invation.html',
+                                                {'invite': invitation, 'url': request.build_absolute_uri(
+                                                    reverse('dashboard:invited', kwargs={'token': invitation.token}))})
 
-            html_content = render_to_string('mail/invation.html',
-                                            {'invite': invitation, 'url': request.build_absolute_uri(
-                                                reverse('dashboard:invited', kwargs={'token': invitation.token}))})
             text_content = strip_tags(html_content)
 
             msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
@@ -435,7 +540,7 @@ def sendInvitation(request):
             request.session['notifications'] = [
                 {'text': "Votre inviation à bien été envoyée, attention elle peut tomber dans les spams!",
                  'type': 'success'}]
-            return redirect(reverse('dashboard:index'))
+            return redirect(reverse('dashboard:invitations'))
 
         return render(request, 'Dashboard/invite.html', setReturnedValues(request, {'form': form}))
     else:
@@ -475,13 +580,21 @@ def register(request, id):
             return redirect(reverse('dashboard:event', kwargs={'id': id}))
 
     event.participants.add(request.user)
-    subject, from_email, to = 'Confirmation pour Coder Dojo Paris du %s' % event.time_from.strftime(
-        "%d %b %Y").title(), settings.EMAIL_HOST_USER, request.user.email
 
-    html_content = render_to_string('mail/register_confirmation.html', {'event': event})  # render with dynamic value
+    try:
+        mail = Mail.objects.get(type='register_confirmation')
+        subject, from_email, to = mail.subject.replace('%date%', event.time_from.strftime(
+            "%d %b %Y").title()), settings.EMAIL_HOST_USER, request.user.email
+        html_content = mail.content.replace("%date%", event.time_from.strftime(
+            "%d %b %Y").title())
+    except Mail.DoesNotExist:
+        subject, from_email, to = 'Confirmation pour Coder Dojo Paris du %s' % event.time_from.strftime(
+            "%d %b %Y").title(), settings.EMAIL_HOST_USER, request.user.email
+
+        html_content = render_to_string('mail/register_confirmation.html',
+                                        {'event': event})  # render with dynamic value
+
     text_content = strip_tags(html_content)  # Strip the html tag. So people can see the pure text at least.
-
-    # create the email, and attach the HTML version as well.
     msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
     msg.attach_alternative(html_content, "text/html")
     msg.send()
@@ -510,7 +623,7 @@ def invited(request, token):
                                             email=cleaned['email'], type=cleaned['type'], gender=cleaned['gender'])
             user.save()
             login(request, user)
-            subject, from_email, to = "Confirmation au Coder Dojo Paris d'inscription", settings.EMAIL_HOST_USER, invitation.receiver
+            subject, from_email, to = "Confirmation au Coder Dojo Paris", settings.EMAIL_HOST_USER, invitation.receiver
 
             html_content = render_to_string('mail/creation_confirmation.html',
                                             {'loginUrl': request.build_absolute_uri(
@@ -555,16 +668,32 @@ def adminEdition(request, type=None, id=None):
             {'text': "Vous n'avez pas la permission d'accéder à cette page",
              'type': 'error'}]
         return redirect('dashboard:index')
-    if type and id:
-        if type.lower == 'mail':
+    if type is not None and id is not None:
+        if type.lower() == 'mail':
             try:
                 mail = Mail.objects.get(id=id)
             except Mail.DoesNotExist:
                 request.session['notifications'] = [
                     {'text': "Mail Introuvable",
                      'type': 'error'}]
-                return redirect('dashboard:index')
-        elif type.lower == 'text':
+                return redirect(reverse('dashboard:index'))
+            if request.POST:
+                form = EmailForm(request.POST, instance=mail)
+                if form.is_valid():
+                    mail = form.save()
+                    request.session['notifications'] = [
+                        {'text': "Le Mail a bien été mis à jour",
+                         'type': 'success'}]
+                    return redirect(reverse('dashboard:edition-item', kwargs={'id': mail.id, 'type': 'mail'}))
+                else:
+                    request.session['notifications'] = [
+                        {'text': "Le formulaire est invalide",
+                         'type': 'error'}]
+            else:
+                form = EmailForm(instance=mail)
+            return render(request, 'Dashboard/parameter.html',
+                          setReturnedValues(request, {'form': form, 'type': type.lower(), 'id': mail.id}))
+        elif type.lower() == 'text':
             try:
                 text = Text.objects.get(id=id)
             except Mail.DoesNotExist:
@@ -572,7 +701,23 @@ def adminEdition(request, type=None, id=None):
                     {'text': "Texte Introuvable",
                      'type': 'error'}]
                 return redirect('dashboard:index')
-        elif type.lower == 'image':
+            if request.POST:
+                form = TextForm(request.POST, instance=text)
+                if form.is_valid():
+                    text = form.save()
+                    request.session['notifications'] = [
+                        {'text': "Le Texte a bien été mis à jour",
+                         'type': 'success'}]
+                    return redirect(reverse('dashboard:edition-item', kwargs={'id': text.id, 'type': 'text'}))
+                else:
+                    request.session['notifications'] = [
+                        {'text': "Le formulaire est invalide",
+                         'type': 'error'}]
+            else:
+                form = TextForm(instance=text)
+            return render(request, 'Dashboard/parameter.html',
+                          setReturnedValues(request, {'form': form, 'type': type.lower(), 'id': text.id}))
+        elif type.lower() == 'image':
             try:
                 image = SliderImage.objects.get(id=id)
             except Mail.DoesNotExist:
@@ -580,6 +725,22 @@ def adminEdition(request, type=None, id=None):
                     {'text': "Image Introuvable",
                      'type': 'error'}]
                 return redirect('dashboard:index')
+            if request.POST:
+                form = ImageForm(request.POST, instance=image)
+                if form.is_valid():
+                    image = form.save()
+                    request.session['notifications'] = [
+                        {'text': "Le Texte a bien été mis à jour",
+                         'type': 'success'}]
+                    return redirect(reverse('dashboard:edition-item', kwargs={'id': image.id, 'type': 'image'}))
+                else:
+                    request.session['notifications'] = [
+                        {'text': "Le formulaire est invalide",
+                         'type': 'error'}]
+            else:
+                form = ImageForm(instance=image)
+            return render(request, 'Dashboard/parameter.html',
+                          setReturnedValues(request, {'form': form, 'type': type.lower(), 'id': image.id}))
         else:
             request.session['notifications'] = [
                 {'text': "Paramètre Introuvable",
@@ -605,8 +766,7 @@ def adminEdition(request, type=None, id=None):
         except SliderImage.DoesNotExist:
             pass
 
-        return render(request, 'Dashboard/parameters.html' ,setReturnedValues(request ,data))
-
+        return render(request, 'Dashboard/parameters.html', setReturnedValues(request, data))
 
 
 def setReturnedValues(request, args=None):

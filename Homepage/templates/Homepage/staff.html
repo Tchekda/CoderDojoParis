@@ -4,9 +4,9 @@
 
 {% block body %}
     <h1>Staff</h1>
-    <hr>
+    <ul>
     {% for personal in staff %}
-        <h2>{{ personal.get_full_name }}</h2>
-        <hr>
+        <li><h3>{{ personal.get_full_name }}</h3></li>
     {% endfor %}
+    </ul>
 {% endblock %}

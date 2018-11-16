@@ -21,7 +21,7 @@
                         <img class="d-block w-100 slider-image" src="{{ image.url }}" alt="First slide">
                         <div class="carousel-caption d-none d-md-block">
                             <h5>{{ image.title }}</h5>
-                            <p>{{ image.text }}</p>
+                            {{ image.text|safe }}
                         </div>
                     </div>
                 {% endfor %}

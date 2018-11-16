@@ -4,9 +4,10 @@
 
 {% block body %}
     <h1>Events Futurs</h1>
+    <ul>
     {% for event in events %}
-        <h2>{{ event.time_from|date|title }}</h2>
-        <address>{{ event.public_adress|title }}</address>
+        <li><h3>{{ event.time_from|date|title }}</h3> {{ event.public_adress|title }}</li>
         <hr>
     {% endfor %}
+    </ul>
 {% endblock %}

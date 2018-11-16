@@ -15,7 +15,7 @@
             <div class="col-xs-12 col-sm-4 col-md-8">
                 {% if footer is not None %}
                     <h5>{{ footer.title }}</h5>
-                    <p>{{ footer.text }}</p>
+                    {{ footer.text|safe }}
                 {% else %}
                     <h5>CoderDojo?</h5>
                     <p><span>CoderDojo is a global volunteer-led community of free programming clubs for young people between 7 and 17. The movement is a grassroots organisation with individual clubs (called "Dojos") acting independently. A charity called the CoderDojo Foundation operates out of Dublin and supports the various clubs by providing a central website and some other support services. Supporters of CoderDojo believe it is part of the solution to addressing the global shortage of programmers by exposing young people to ICT at a young age. The movement has seen significant growth since its founding. The CoderDojo Foundation estimates 1,250 Dojos spread across 69 countries, with a growth rate of several new Dojos every week.</span>
