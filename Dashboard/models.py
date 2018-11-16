@@ -6,3 +6,6 @@ class Mail(models.Model):
     type = models.CharField(max_length=100, unique=True)
     subject = models.CharField(max_length=200)
     content = models.TextField()
+
+    def __str__(self):
+        return "Mail : %s" % self.type.title()

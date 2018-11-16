@@ -13,9 +13,14 @@ The absolute folder of the templates rendered here : ./templates/Homepage/fileNa
 
 
 def index(request):  # Landing page
-    return render(request, 'Homepage/homepage.html', setReturnedValues(request, {'images': SliderImage.objects.all(),
+    images = None
+    try:
+        images = SliderImage.objects.all()
+    except SliderImage.DoesNotExist:
+        pass
+    return render(request, 'Homepage/homepage.html', setReturnedValues(request, {'images': images,
                                                                                  'ints': range(
-                                                                                     SliderImage.objects.all().count())}))
+                                                                                     images.count())}))
 
 
 def events(request):  # List of events

@@ -1,24 +1,55 @@
 {% extends 'Dashboard/layout.html' %}
 {% block body %}
-<div class="box">
-  <div class="box-header with-border">
-    <h3 class="box-title">{{ workshop.name }}</h3>
-    <div class="box-tools pull-right">
-      <!-- Buttons, labels, and many other things can be placed here! -->
-      <!-- Here is a label for example -->
-      <span class="label label-primary">{{ workshop.get_level_display }}</span>
+    <div class="box">
+        <div class="box-header with-border">
+            <h3 class="box-title">{{ workshop.name }}</h3>
+            <div class="box-tools pull-right">
+                <!-- Buttons, labels, and many other things can be placed here! -->
+                <!-- Here is a label for example -->
+                <span class="label label-primary">{{ workshop.get_level_display }}</span>
+            </div>
+            <!-- /.box-tools -->
+        </div>
+        <!-- /.box-header -->
+        <div class="box-body">
+            {{ workshop.description }}
+        </div>
+        <!-- /.box-body -->
+        <div class="box-footer">
+            Par {{ workshop.manager.get_full_name }}. <a href="mailto:{{ workshop.manager.email }}">Le Contacter par
+            Mail <i class="fa fa-envelope"></i></a>
+        </div>
+        <!-- box-footer -->
     </div>
-    <!-- /.box-tools -->
-  </div>
-  <!-- /.box-header -->
-  <div class="box-body">
-    {{ workshop.description }}
-  </div>
-  <!-- /.box-body -->
-  <div class="box-footer">
-    Par {{ workshop.manager.get_full_name }}. <a href="mailto:{{ workshop.manager.email }}">Le Contacter par Mail <i class="fa fa-envelope"></i></a>
-  </div>
-  <!-- box-footer -->
-</div>
-<!-- /.box -->
+    <!-- /.box -->
+    {% if workshop.manager and workshop.manager.id == user.id or user.is_staff %}
+        <div class="box box-danger">
+            <div class="box-header with-border">
+                <h3 class="box-title">Editer l'Atelier</h3>
+            </div>
+            <div class="box-body">
+                <form id="login-form" method="post" role="form" action="{% url 'dashboard:workshops' workshop.id %}">
+                    {% csrf_token %}
+                    {% for error in form.non_field_errors %}
+                        <div class="form-group has-errors text-danger small">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                    {% for field in form %}
+                        <div class="form-group has-errors text-danger small">
+                            {{ field.errors }}
+                        </div>
+                        <div class="form-group">
+                            {{ field.label }}
+                            {{ field }}
+                        </div>
+                    {% endfor %}
+                    <div class="box-footer">
+                        <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> Enregister</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+
 {% endblock %}

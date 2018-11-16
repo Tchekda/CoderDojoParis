@@ -1,5 +1,5 @@
 from django import forms
-from Core.models import User, Invitation, Family, Event
+from Core.models import User, Invitation, Family, Event, Workshop
 
 
 class EditUserForm(forms.ModelForm):
@@ -96,32 +96,37 @@ class InvitedFamily(forms.ModelForm):
         }
 
 
-class EditEvent(forms.ModelForm):
-    time = forms.CharField(
-        widget=forms.TextInput(attrs={'id': 'datepicker', 'class': 'form-control', 'placeholder': 'Horaires'}),
-        label='Horaires')
-
+class EventForm(forms.ModelForm):
     class Meta:
         model = Event
-        fields = ['public_adress', 'adress', 'max_students', 'participants', 'state']
+        fields = ['time_from', 'time_end', 'public_adress', 'adress', 'max_students', 'participants', 'state',
+                  'twitter']
         labels = {
+            'time_from': "Heure de début",
+            'time_end': "Heure de fin",
             'public_adress': 'Adresse Publique',
             'adress': 'Adresse Privée',
             'max_students': 'Nombre Maximal de Participants',
             'participants': 'Préinscription',
             'state': 'Etat',
+            'twitter': 'Lien de la publication Twitter (Vide si pas encore posté!)',
         }
         widgets = {
+            'time_from': forms.TextInput(
+                attrs={'class': 'form-control datepicker', 'placeholder': 'Heure de Début'}),
+            'time_end': forms.TextInput(
+                attrs={'class': 'form-control datepicker', 'placeholder': 'Heure de Fin'}),
             'public_adress': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Adresse Publique'}),
             'adress': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Adresse Privée'}),
             'max_students': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de participants'}),
             'participants': forms.SelectMultiple(attrs={'class': 'form-control', 'placeholder': 'Préinscrits'}),
             'state': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Etat'}),
+            'twitter': forms.TextInput(
+                attrs={'class': 'form-control', 'placeholder': 'Lien de la publication Twitter'}),
         }
 
 
 class EditFamily(forms.ModelForm):
-
     class Meta:
         model = Family
         fields = ['email', 'name']
@@ -132,4 +137,22 @@ class EditFamily(forms.ModelForm):
         widgets = {
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Adresse E-Mail'}),
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nom de Famille'}),
+        }
+
+
+class WorkshopForm(forms.ModelForm):
+    class Meta:
+        model = Workshop
+        fields = ['name', 'manager', 'description', 'level']
+        labels = {
+            'manager': "Responsable de l'Atelier",
+            'name': "Nom de l'Atelier",
+            'description': "Description de l'Atelier",
+            'level': "Niveau de difficulté"
+        }
+        widgets = {
+            'manager': forms.Select(attrs={'class': 'form-control', 'placeholder': "Responsable de l'Atelier"}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': "Nom de l'Atelier"}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': "Description de l'Atelier"}),
+            'level': forms.Select(attrs={'class': 'form-control', 'placeholder': "Niveau de difficulté"}),
         }

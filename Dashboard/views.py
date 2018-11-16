@@ -8,10 +8,12 @@ from django.urls import reverse
 from django.conf import settings
 from django.contrib.auth import login, logout
 from Core.models import Workshop, User, Event, Family, Invitation
-from .forms import EditUserForm, AddMember, SendInvitation, InvitedFamily, EditEvent, EditFamily
+from .forms import EditUserForm, AddMember, SendInvitation, InvitedFamily, EventForm, EditFamily, WorkshopForm
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from Homepage.models import SliderImage, Text
+from .models import Mail
 
 
 # Create your views here.
@@ -25,13 +27,63 @@ def index(request):
 def workshops(request, id):
     try:
         workshop = Workshop.objects.get(id=id)
-    except (Workshop.DoesNotExist, Workshop.MultipleObjectsReturned):
-        raise Http404('Impossible de trouver l\'Atelier')
+    except Workshop.DoesNotExist:
+        request.session['notifications'] = [
+            {'text': "Impossible de trouver l'Atelier",
+             'type': 'error'}]
+        return render(request, 'Dashboard/index.html',
+                      setReturnedValues(request))
     else:
-        return render(request, 'Dashboard/workshop.html', setReturnedValues(request, {'workshop': workshop}))
+        old = workshop
+        if request.POST:
+            form = WorkshopForm(request.POST, instance=workshop)
+            if form.is_valid():
+                request.session['notifications'] = [
+                    {'text': "L'atelier a bien été mis à jour!",
+                     'type': 'success'}]
+                form.save(commit=False)
+                return redirect(reverse('dashboard:workshops', kwargs={'id': workshop.id}))
+            else:
+                request.session['notifications'] = [
+                    {'text': "Une erreur est survenue, veuillez vérifier le formulaire",
+                     'type': 'error'}]
+                return render(request, 'Dashboard/workshop.html',
+                              setReturnedValues(request, {'workshop': old, 'form': form}))
+        else:
+            form = WorkshopForm(instance=workshop)
+        return render(request, 'Dashboard/workshop.html',
+                      setReturnedValues(request, {'workshop': workshop, 'form': form}))
 
 
 @login_required()
+def addWorkshop(request):
+    if request.user.type == 'STA' or request.user.is_staff:
+        if request.POST:
+            form = WorkshopForm(request.POST)
+            if form.is_valid():
+                workshop = form.save()
+                request.session['notifications'] = [
+                    {'text': "L'Atelier a bien été créer!",
+                     'type': 'success'}]
+                return redirect(reverse('dashboard:workshops', kwargs={'id': workshop.id}))
+            else:
+                request.session['notifications'] = [
+                    {'text': "Une erreur est survenue, veuillez vérifier le formulaire",
+                     'type': 'error'}]
+                return render(request, 'Dashboard/add-workshop.html',
+                              setReturnedValues(request, {'form': form}))
+        else:
+            form = WorkshopForm()
+        return render(request, 'Dashboard/add-workshop.html',
+                      setReturnedValues(request, {'form': form}))
+    else:
+        request.session['notifications'] = [
+            {'text': "Vous ne pouvez pas accéder à cette page",
+             'type': 'error'}]
+        return render(request, 'Dashboard/index.html',
+                      setReturnedValues(request))
+
+
 def userShow(request, id):
     if request.user.id is id:
         form = EditUserForm(instance=request.user, initial={'family': str(request.user.family)})
@@ -221,14 +273,21 @@ def eventView(request, id):
     try:
         event = Event.objects.get(id=id)
     except (Event.DoesNotExist, Event.MultipleObjectsReturned):
-        raise Http404('Evènement introuvable')
+        request.session['notifications'] = [
+            {'text': "Impossible de trouver l'évènement",
+             'type': 'error'}]
+        return render(request, 'Dashboard/index.html',
+                      setReturnedValues(request))
 
     if request.POST:
-        oldevent = event
-        form = EditEvent(request.POST, instance=event)
+        oldstate = event.state
+        oldpart = []
+        for part in event.participants.all():
+            oldpart.append(part)
+        form = EventForm(request.POST, instance=event)
         if form.is_valid():
             cleaned = form.cleaned_data
-            if oldevent.state != cleaned['state'] and cleaned['state'] == 'REG':
+            if oldstate != cleaned['state'] and cleaned['state'] == 'REG':
                 sent = []
                 for family in Family.objects.all():
                     if family.email not in sent:
@@ -273,9 +332,9 @@ def eventView(request, id):
                      'type': 'success'}]
 
             else:
-                if cleaned['participants'] and event.participants is not cleaned['participants']:
-                    for participant in cleaned['participants']:
-                        event.participants.add(request.user)
+                for participant in cleaned['participants']:
+                    if participant not in oldpart:
+                        event.participants.add(participant)
                         subject, from_email, to = 'Confirmation pour Coder Dojo Paris du %s' % event.time_from.strftime(
                             "%d %b %Y").title(), settings.EMAIL_HOST_USER, participant.email
 
@@ -288,14 +347,54 @@ def eventView(request, id):
                         msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
                         msg.attach_alternative(html_content, "text/html")
                         msg.send()
-                request.session['notifications'] = [
-                    {'text': "L'évènement à bien été mis à jour",
-                     'type': 'success'}]
+            request.session['notifications'] = [
+                {'text': "L'évènement à bien été mis à jour",
+                 'type': 'success'}]
             form.save()
             return redirect(reverse('dashboard:event', kwargs={'id': event.id}))
     else:
-        form = EditEvent(instance=event)
+        form = EventForm(instance=event)
     return render(request, 'Dashboard/event.html', setReturnedValues(request, {'event': event, 'form': form}))
+
+
+@login_required()
+def addEvent(request):
+    if request.user.is_staff is False:
+        request.session['notifications'] = [
+            {'text': "Vous n'avez pas la permission d'accéder à cette page",
+             'type': 'error'}]
+        return redirect('dashboard:index')
+
+    if request.POST:
+        form = EventForm(request.POST)
+        if form.is_valid():
+            event = form.save()
+            for participant in event.participants.all():
+                subject, from_email, to = 'Confirmation pour Coder Dojo Paris du %s' % event.time_from.strftime(
+                    "%d %b %Y").title(), settings.EMAIL_HOST_USER, participant.email
+
+                html_content = render_to_string('mail/register_confirmation.html',
+                                                {'event': event})  # render with dynamic value
+                text_content = strip_tags(
+                    html_content)  # Strip the html tag. So people can see the pure text at least.
+
+                # create the email, and attach the HTML version as well.
+                msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+                msg.attach_alternative(html_content, "text/html")
+                msg.send()
+            request.session['notifications'] = [
+                {'text': "L'évent a bien été créé!",
+                 'type': 'success'}]
+            return redirect(reverse('dashboard:event', kwargs={'id': event.id}))
+        else:
+            request.session['notifications'] = [
+                {'text': "Une erreur est survenue, veuillez vérifier le formulaire",
+                 'type': 'error'}]
+            return render(request, 'Dashboard/add-event.html',
+                          setReturnedValues(request, {'form': form}))
+    else:
+        form = EventForm()
+    return render(request, 'Dashboard/add-event.html', setReturnedValues(request, {'form': form}))
 
 
 @login_required()
@@ -447,6 +546,67 @@ def invitations(request):
         pass
     return render(request, 'Dashboard/invitations.html',
                   setReturnedValues(request, {'invites': invites, 'receive': receive}))
+
+
+@login_required()
+def adminEdition(request, type=None, id=None):
+    if request.user.is_staff is False:
+        request.session['notifications'] = [
+            {'text': "Vous n'avez pas la permission d'accéder à cette page",
+             'type': 'error'}]
+        return redirect('dashboard:index')
+    if type and id:
+        if type.lower == 'mail':
+            try:
+                mail = Mail.objects.get(id=id)
+            except Mail.DoesNotExist:
+                request.session['notifications'] = [
+                    {'text': "Mail Introuvable",
+                     'type': 'error'}]
+                return redirect('dashboard:index')
+        elif type.lower == 'text':
+            try:
+                text = Text.objects.get(id=id)
+            except Mail.DoesNotExist:
+                request.session['notifications'] = [
+                    {'text': "Texte Introuvable",
+                     'type': 'error'}]
+                return redirect('dashboard:index')
+        elif type.lower == 'image':
+            try:
+                image = SliderImage.objects.get(id=id)
+            except Mail.DoesNotExist:
+                request.session['notifications'] = [
+                    {'text': "Image Introuvable",
+                     'type': 'error'}]
+                return redirect('dashboard:index')
+        else:
+            request.session['notifications'] = [
+                {'text': "Paramètre Introuvable",
+                 'type': 'error'}]
+            return redirect('dashboard:index')
+
+    else:
+        data = {}
+        try:
+            mails = Mail.objects.all()
+            data['mails'] = mails
+        except Mail.DoesNotExist:
+            pass
+        try:
+            texts = Text.objects.all()
+            data['texts'] = texts
+        except Text.DoesNotExist:
+            pass
+
+        try:
+            images = SliderImage.objects.all()
+            data['images'] = images
+        except SliderImage.DoesNotExist:
+            pass
+
+        return render(request, 'Dashboard/parameters.html' ,setReturnedValues(request ,data))
+
 
 
 def setReturnedValues(request, args=None):

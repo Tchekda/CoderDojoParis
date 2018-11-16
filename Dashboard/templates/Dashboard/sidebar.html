@@ -27,7 +27,7 @@
                     <li {% if past %}class="active"{% endif %}><a href="{% url 'dashboard:past-events' %}"><i
                             class="fa fa-calendar-times-o"></i> Évènenements passés</a></li>
                     {% if user.is_staff %}
-                        <li><a href="{% url 'dashboard:index' %}"><i
+                        <li><a href="{% url 'dashboard:add-event' %}"><i
                                 class="fa fa-plus"></i> Créer un évènement</a></li>
                     {% endif %}
                 </ul>
@@ -46,6 +46,10 @@
                             <li><a href="{% url 'dashboard:workshops' workshop.id %}"><i
                                     class="fa fa-circle-o"></i> {{ workshop }}</a></li>
                         {% endfor %}
+                        {% if user.type == 'STA' or user.is_staff %}
+                            <li><a href="{% url 'dashboard:add-workshop' %}"><i
+                                    class="fa fa-plus"></i> Créer un Workshop</a></li>
+                        {% endif %}
                     </ul>
                 </li>
             {% endif %}
@@ -130,7 +134,7 @@
                     </a>
                     <ul class="treeview-menu">
                         <li>
-                            <a href="{% url 'dashboard:new-invite' %}"><i class="fa fa-edit"></i> Editer les textes</a>
+                            <a href="{% url 'dashboard:edition-list' %}"><i class="fa fa-edit"></i> Editer les textes</a>
                         </li>
                         <li>
                             <a href="/admin/" target="_blank"><i class="fa fa-circle-o"></i> Admin Django</a>

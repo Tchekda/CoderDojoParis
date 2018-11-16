@@ -12,6 +12,7 @@ class Event(models.Model):
     max_students = models.IntegerField(default=30)
     coordinates = models.CharField(max_length=100, blank=True)  # xxxxxxxxx:yyyyyyyyy for OpenStreetMap
     participants = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
+    twitter = models.URLField(blank=True)
 
     STATES = (
         ('PLA', 'Planned'),
@@ -38,6 +39,8 @@ class Event(models.Model):
         else:
             raise ValidationError("API error : %s" % api_response_dict)
 
+        if self.time_from >= self.time_end:
+            raise ValidationError("La fin est avant le début??")
         super().save(*args, **kwargs)
 
     def get_coord(self):
@@ -50,7 +53,6 @@ class Event(models.Model):
 class Workshop(models.Model):
     name = models.CharField(max_length=20, unique=True)
     description = models.TextField()
-    max_participant = models.IntegerField()
     manager = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
 
     LEVEL = (
